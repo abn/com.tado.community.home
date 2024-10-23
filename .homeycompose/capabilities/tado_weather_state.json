@@ -1,0 +1,90 @@
+{
+  "type": "enum",
+  "title": {
+    "en": "Weather State"
+  },
+  "getable": true,
+  "setable": false,
+  "values": [
+    {
+      "id": "NIGHT_CLEAR",
+      "title": {
+        "en": "Clear Night"
+      }
+    },
+    {
+      "id": "NIGHT_CLOUDY",
+      "title": {
+        "en": "Cloudy Night"
+      }
+    },
+    {
+      "id": "CLOUDY",
+      "title": {
+        "en": "Cloudy"
+      }
+    },
+    {
+      "id": "CLOUDY_MOSTLY",
+      "title": {
+        "en": "Mostly Cloudy"
+      }
+    },
+    {
+      "id": "CLOUDY_PARTLY",
+      "title": {
+        "en": "Partly Cloudy"
+      }
+    },
+    {
+      "id": "FOGGY",
+      "title": {
+        "en": "Foggy"
+      }
+    },
+    {
+      "id": "DRIZZLE",
+      "title": {
+        "en": "Drizzle"
+      }
+    },
+    {
+      "id": "SCATTERED_RAIN",
+      "title": {
+        "en": "Scattered Rain"
+      }
+    },
+    {
+      "id": "RAIN",
+      "title": {
+        "en": "Rain"
+      }
+    },
+    {
+      "id": "SNOW",
+      "title": {
+        "en": "Snow"
+      }
+    },
+    {
+      "id": "THUNDERSTORMS",
+      "title": {
+        "en": "Thunderstorms"
+      }
+    },
+    {
+      "id": "SUN",
+      "title": {
+        "en": "Sunny"
+      }
+    },
+    {
+      "id": "WINDY",
+      "title": {
+        "en": "Windy"
+      }
+    }
+  ],
+  "uiComponent": "sensor",
+  "icon": "/assets/icons/capabilities/tado_weather_state.svg"
+}

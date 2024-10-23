@@ -1,3 +1,597 @@
 {
-  "_comment": "This file is generated. Please edit .homeycompose/app.json instead."
+  "_comment": "This file is generated. Please edit .homeycompose/app.json instead.",
+  "id": "com.tado.community.home",
+  "version": "1.0.0",
+  "compatibility": ">=5.0.0",
+  "sdk": 3,
+  "platforms": [
+    "local"
+  ],
+  "name": {
+    "en": "tado° Home Manager"
+  },
+  "description": {
+    "en": "Adds support for a tado° Homes and Rooms as devices. This only provides capabilities that are not available in the official app by Athom."
+  },
+  "category": [
+    "climate"
+  ],
+  "homepage": "https://tado.com",
+  "source": "https://github.com/abn/com.tado.community.home",
+  "bugs": {
+    "url": "https://github.com/abn/com.tado.community.home/issues"
+  },
+  "support": "https://github.com/abn/com.tado.community.home/issues",
+  "permissions": [],
+  "brandColor": "#FFB121",
+  "images": {
+    "small": "/assets/images/small.png",
+    "large": "/assets/images/large.png",
+    "xlarge": "/assets/images/xlarge.png"
+  },
+  "author": {
+    "name": "Arun Neelicattu",
+    "email": "arun.neelicattu@gmail.com"
+  },
+  "flow": {
+    "triggers": [
+      {
+        "id": "tado_presence_mode_changed",
+        "title": {
+          "en": "When tado° presence mode changes"
+        },
+        "tokens": [
+          {
+            "name": "tado_presence_mode",
+            "type": "string",
+            "title": {
+              "en": "tado° presence mode"
+            }
+          }
+        ],
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=tado-home"
+          }
+        ]
+      },
+      {
+        "id": "tado_solar_intensity_changed",
+        "title": {
+          "en": "When tado° solar intensity changes"
+        },
+        "tokens": [
+          {
+            "name": "tado_solar_intensity",
+            "type": "number",
+            "title": {
+              "en": "tado° solar intensity"
+            }
+          }
+        ],
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=tado-home"
+          }
+        ]
+      },
+      {
+        "id": "tado_weather_state",
+        "title": {
+          "en": "When tado° weather state changes"
+        },
+        "tokens": [
+          {
+            "name": "tado_weather_state",
+            "type": "string",
+            "title": {
+              "en": "tado° weather state"
+            }
+          }
+        ],
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=tado-home"
+          }
+        ]
+      }
+    ],
+    "actions": [
+      {
+        "id": "meter_reading_report",
+        "title": {
+          "en": "Report meter reading"
+        },
+        "titleFormatted": {
+          "en": "Report meter reading of [[reading]] on [[date]]"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=tado-home"
+          },
+          {
+            "name": "reading",
+            "type": "number",
+            "title": {
+              "en": "Meter reading"
+            },
+            "placeholder": {
+              "en": "In units as configured on your tado° home"
+            },
+            "step": 1
+          },
+          {
+            "name": "date",
+            "type": "text",
+            "required": false,
+            "title": {
+              "en": "Date of reading (default is today)"
+            },
+            "placeholder": {
+              "en": "YYYY-MM-DD"
+            }
+          }
+        ]
+      },
+      {
+        "id": "resume_schedule",
+        "title": {
+          "en": "Resume schedule"
+        },
+        "titleFormatted": {
+          "en": "Resume schedule in all rooms"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=tado-home"
+          }
+        ]
+      },
+      {
+        "id": "boost_heating",
+        "title": {
+          "en": "Boost heating"
+        },
+        "titleFormatted": {
+          "en": "Boost heating in all rooms"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=tado-home"
+          }
+        ]
+      }
+    ]
+  },
+  "drivers": [
+    {
+      "class": "other",
+      "capabilities": [
+        "tado_presence_mode",
+        "tado_weather_state",
+        "measure_temperature.outside",
+        "tado_solar_intensity",
+        "tado_room_count",
+        "meter_gas",
+        "meter_power.daily_consumption_average",
+        "meter_power.daily_consumption",
+        "meter_power.monthly_consumption",
+        "tado_geofencing_mode",
+        "button.restart_polling"
+      ],
+      "capabilitiesOptions": {
+        "meter_power.daily_consumption": {
+          "title": {
+            "en": "Consumption Today"
+          },
+          "desc": {
+            "en": "Today's consumption of energy by the heating system."
+          },
+          "decimals": 2
+        },
+        "meter_power.daily_consumption_average": {
+          "title": {
+            "en": "Consumption Daily Average"
+          },
+          "desc": {
+            "en": "The average daily consumption of energy by the heating system."
+          },
+          "decimals": 2
+        },
+        "meter_power.monthly_consumption": {
+          "title": {
+            "en": "Consumption This Month"
+          },
+          "desc": {
+            "en": "The monthly consumption of energy by the heating system."
+          },
+          "decimals": 2
+        },
+        "button.restart_polling": {
+          "maintenanceAction": true,
+          "title": {
+            "en": "Restart API Polling"
+          },
+          "desc": {
+            "en": "Forces a restart of API polling and refreshes data."
+          }
+        },
+        "measure_temperature.outside": {
+          "title": {
+            "en": "Outside Temperature"
+          },
+          "desc": {
+            "en": "Temperature outside in the region of the home as provided by tado°."
+          },
+          "units": "°C",
+          "decimals": 2
+        }
+      },
+      "platforms": [
+        "local"
+      ],
+      "connectivity": [
+        "cloud"
+      ],
+      "images": {
+        "small": "/drivers/tado-home/assets/images/small.png",
+        "large": "/drivers/tado-home/assets/images/large.png",
+        "xlarge": "/drivers/tado-home/assets/images/xlarge.png"
+      },
+      "pair": [
+        {
+          "id": "login_credentials",
+          "template": "login_credentials"
+        },
+        {
+          "id": "list_devices",
+          "template": "list_devices",
+          "navigation": {
+            "next": "add_devices"
+          }
+        },
+        {
+          "id": "add_devices",
+          "template": "add_devices"
+        }
+      ],
+      "repair": [
+        {
+          "id": "login_credentials",
+          "template": "login_credentials"
+        }
+      ],
+      "name": {
+        "en": "tado° Home"
+      },
+      "id": "tado-home",
+      "settings": [
+        {
+          "type": "group",
+          "label": {
+            "en": "tado° API Polling Intervals"
+          },
+          "children": [
+            {
+              "id": "geofencing_mode_polling_interval",
+              "type": "number",
+              "label": {
+                "en": "Geofencing mode"
+              },
+              "value": 60,
+              "hint": {
+                "en": "Polling interval to check for geofencing mode changes."
+              },
+              "units": {
+                "en": "seconds"
+              },
+              "min": 10,
+              "step": 1
+            },
+            {
+              "id": "home_info_polling_interval",
+              "type": "number",
+              "label": {
+                "en": "Home information"
+              },
+              "value": 86400,
+              "hint": {
+                "en": "Polling interval to check for home details changes."
+              },
+              "units": {
+                "en": "seconds"
+              },
+              "min": 10,
+              "step": 1
+            },
+            {
+              "id": "gas_meter_reading_polling_interval",
+              "type": "number",
+              "label": {
+                "en": "Gas meter readings"
+              },
+              "value": 86400,
+              "hint": {
+                "en": "Polling interval to fetch gas meter readings."
+              },
+              "units": {
+                "en": "seconds"
+              },
+              "min": 10,
+              "step": 1
+            },
+            {
+              "id": "energy_consumption_polling_interval",
+              "type": "number",
+              "label": {
+                "en": "Energy Consumption Details"
+              },
+              "value": 3600,
+              "hint": {
+                "en": "Polling interval to fetch energy consumption details."
+              },
+              "units": {
+                "en": "seconds"
+              },
+              "min": 10,
+              "step": 1
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "tado° Home Information"
+          },
+          "children": [
+            {
+              "id": "auto_assist_enabled",
+              "type": "label",
+              "label": {
+                "en": "Auto Assist Enabled"
+              },
+              "value": "Yes"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": {
+        "en": "tado° Zone"
+      },
+      "class": "other",
+      "capabilities": [
+        "button.restart_polling"
+      ],
+      "capabilityOptions": {
+        "button.restart_polling": {
+          "maintenanceAction": true,
+          "title": {
+            "en": "Restart API Polling"
+          },
+          "desc": {
+            "en": "Forces a restart of API polling and refreshes data."
+          }
+        }
+      },
+      "platforms": [
+        "local"
+      ],
+      "connectivity": [
+        "cloud"
+      ],
+      "images": {
+        "small": "/drivers/tado-zone/assets/images/small.png",
+        "large": "/drivers/tado-zone/assets/images/large.png",
+        "xlarge": "/drivers/tado-zone/assets/images/xlarge.png"
+      },
+      "pair": [
+        {
+          "id": "login_credentials",
+          "template": "login_credentials"
+        },
+        {
+          "id": "list_devices",
+          "template": "list_devices",
+          "navigation": {
+            "next": "add_devices"
+          }
+        },
+        {
+          "id": "add_devices",
+          "template": "add_devices"
+        }
+      ],
+      "repair": [
+        {
+          "id": "login_credentials",
+          "template": "login_credentials"
+        }
+      ],
+      "id": "tado-zone"
+    }
+  ],
+  "capabilities": {
+    "tado_geofencing_mode": {
+      "type": "enum",
+      "title": {
+        "en": "Geofencing Mode"
+      },
+      "getable": true,
+      "setable": true,
+      "values": [
+        {
+          "id": "auto",
+          "title": {
+            "en": "Auto"
+          }
+        },
+        {
+          "id": "home",
+          "title": {
+            "en": "Home"
+          }
+        },
+        {
+          "id": "away",
+          "title": {
+            "en": "Away"
+          }
+        }
+      ],
+      "uiComponent": "picker"
+    },
+    "tado_presence_mode": {
+      "type": "enum",
+      "title": {
+        "en": "Presence Mode"
+      },
+      "getable": true,
+      "setable": false,
+      "values": [
+        {
+          "id": "home",
+          "title": {
+            "en": "Home"
+          }
+        },
+        {
+          "id": "away",
+          "title": {
+            "en": "Away"
+          }
+        }
+      ],
+      "uiComponent": "sensor",
+      "icon": "/assets/icons/capabilities/tado_presence_mode.svg"
+    },
+    "tado_room_count": {
+      "type": "number",
+      "title": {
+        "en": "Rooms"
+      },
+      "getable": true,
+      "setable": false,
+      "step": 1,
+      "uiComponent": "sensor",
+      "icon": "/assets/icons/capabilities/tado_room_count.svg"
+    },
+    "tado_solar_intensity": {
+      "type": "number",
+      "title": {
+        "en": "Solar Intensity"
+      },
+      "getable": true,
+      "setable": false,
+      "unit": "%",
+      "decimals": 2,
+      "min": 0,
+      "max": 100,
+      "uiComponent": "sensor",
+      "icon": "/assets/icons/capabilities/tado_solar_intensity.svg"
+    },
+    "tado_weather_state": {
+      "type": "enum",
+      "title": {
+        "en": "Weather State"
+      },
+      "getable": true,
+      "setable": false,
+      "values": [
+        {
+          "id": "NIGHT_CLEAR",
+          "title": {
+            "en": "Clear Night"
+          }
+        },
+        {
+          "id": "NIGHT_CLOUDY",
+          "title": {
+            "en": "Cloudy Night"
+          }
+        },
+        {
+          "id": "CLOUDY",
+          "title": {
+            "en": "Cloudy"
+          }
+        },
+        {
+          "id": "CLOUDY_MOSTLY",
+          "title": {
+            "en": "Mostly Cloudy"
+          }
+        },
+        {
+          "id": "CLOUDY_PARTLY",
+          "title": {
+            "en": "Partly Cloudy"
+          }
+        },
+        {
+          "id": "FOGGY",
+          "title": {
+            "en": "Foggy"
+          }
+        },
+        {
+          "id": "DRIZZLE",
+          "title": {
+            "en": "Drizzle"
+          }
+        },
+        {
+          "id": "SCATTERED_RAIN",
+          "title": {
+            "en": "Scattered Rain"
+          }
+        },
+        {
+          "id": "RAIN",
+          "title": {
+            "en": "Rain"
+          }
+        },
+        {
+          "id": "SNOW",
+          "title": {
+            "en": "Snow"
+          }
+        },
+        {
+          "id": "THUNDERSTORMS",
+          "title": {
+            "en": "Thunderstorms"
+          }
+        },
+        {
+          "id": "SUN",
+          "title": {
+            "en": "Sunny"
+          }
+        },
+        {
+          "id": "WINDY",
+          "title": {
+            "en": "Windy"
+          }
+        }
+      ],
+      "uiComponent": "sensor",
+      "icon": "/assets/icons/capabilities/tado_weather_state.svg"
+    }
+  }
 }

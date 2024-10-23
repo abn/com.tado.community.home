@@ -1,0 +1,103 @@
+{
+  "triggers": [
+    {
+      "id": "tado_presence_mode_changed",
+      "title": {
+        "en": "When tado° presence mode changes"
+      },
+      "tokens": [
+        {
+          "name": "tado_presence_mode",
+          "type": "string",
+          "title": {
+            "en": "tado° presence mode"
+          }
+        }
+      ]
+    },
+    {
+      "id": "tado_solar_intensity_changed",
+      "title": {
+        "en": "When tado° solar intensity changes"
+      },
+      "tokens": [
+        {
+          "name": "tado_solar_intensity",
+          "type": "number",
+          "title": {
+            "en": "tado° solar intensity"
+          }
+        }
+      ]
+    },
+    {
+      "id": "tado_weather_state",
+      "title": {
+        "en": "When tado° weather state changes"
+      },
+      "tokens": [
+        {
+          "name": "tado_weather_state",
+          "type": "string",
+          "title": {
+            "en": "tado° weather state"
+          }
+        }
+      ]
+    }
+  ],
+
+  "actions": [
+    {
+      "id": "meter_reading_report",
+      "title": {
+        "en": "Report meter reading"
+      },
+      "titleFormatted": {
+        "en": "Report meter reading of [[reading]] on [[date]]"
+      },
+      "args": [
+        {
+          "name": "reading",
+          "type": "number",
+          "title": {
+            "en": "Meter reading"
+          },
+          "placeholder": {
+            "en": "In units as configured on your tado° home"
+          },
+          "step": 1
+        },
+        {
+          "name": "date",
+          "type": "text",
+          "required": false,
+          "title": {
+            "en": "Date of reading (default is today)"
+          },
+          "placeholder": {
+            "en": "YYYY-MM-DD"
+          }
+        }
+      ]
+    },
+    {
+      "id": "resume_schedule",
+      "title": {
+        "en": "Resume schedule"
+      },
+      "titleFormatted": {
+        "en": "Resume schedule in all rooms"
+      }
+    },
+    {
+      "id": "boost_heating",
+      "title": {
+        "en": "Boost heating"
+      },
+      "titleFormatted": {
+        "en": "Boost heating in all rooms"
+      }
+    }
+  ]
+}

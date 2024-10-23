@@ -1,0 +1,47 @@
+{
+  "$extends": "tado",
+  "name": {
+    "en": "tado° Home"
+  },
+  "capabilities": [
+    "tado_presence_mode",
+    "tado_weather_state",
+    "measure_temperature.outside",
+    "tado_solar_intensity",
+    "tado_room_count",
+    "meter_gas",
+    "meter_power.daily_consumption_average",
+    "meter_power.daily_consumption",
+    "meter_power.monthly_consumption",
+    "tado_geofencing_mode",
+    "button.restart_polling"
+  ],
+  "capabilitiesOptions": {
+    "meter_power.daily_consumption": {
+      "title": { "en": "Consumption Today" },
+      "desc": { "en": "Today's consumption of energy by the heating system." },
+      "decimals": 2
+    },
+    "meter_power.daily_consumption_average": {
+      "title": { "en": "Consumption Daily Average" },
+      "desc": { "en": "The average daily consumption of energy by the heating system." },
+      "decimals": 2
+    },
+    "meter_power.monthly_consumption": {
+      "title": { "en": "Consumption This Month" },
+      "desc": { "en": "The monthly consumption of energy by the heating system." },
+      "decimals": 2
+    },
+    "button.restart_polling": {
+      "maintenanceAction": true,
+      "title": { "en": "Restart API Polling" },
+      "desc": { "en": "Forces a restart of API polling and refreshes data." }
+    },
+    "measure_temperature.outside": {
+      "title": { "en": "Outside Temperature" },
+      "desc": { "en": "Temperature outside in the region of the home as provided by tado°." },
+      "units": "°C",
+      "decimals": 2
+    }
+  }
+}

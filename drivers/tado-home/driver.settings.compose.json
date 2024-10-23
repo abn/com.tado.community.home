@@ -1,0 +1,60 @@
+[
+  {
+    "type": "group",
+    "label": { "en": "tado° API Polling Intervals" },
+    "children": [
+      {
+        "id": "geofencing_mode_polling_interval",
+        "type": "number",
+        "label": { "en": "Geofencing mode" },
+        "value": 60,
+        "hint": { "en": "Polling interval to check for geofencing mode changes." },
+        "units": { "en": "seconds" },
+        "min": 10,
+        "step": 1
+      },
+      {
+        "id": "home_info_polling_interval",
+        "type": "number",
+        "label": { "en": "Home information" },
+        "value": 86400,
+        "hint": { "en": "Polling interval to check for home details changes." },
+        "units": { "en": "seconds" },
+        "min": 10,
+        "step": 1
+      },
+      {
+        "id": "gas_meter_reading_polling_interval",
+        "type": "number",
+        "label": { "en": "Gas meter readings" },
+        "value": 86400,
+        "hint": { "en": "Polling interval to fetch gas meter readings." },
+        "units": { "en": "seconds" },
+        "min": 10,
+        "step": 1
+      },
+      {
+        "id": "energy_consumption_polling_interval",
+        "type": "number",
+        "label": { "en": "Energy Consumption Details" },
+        "value": 3600,
+        "hint": { "en": "Polling interval to fetch energy consumption details." },
+        "units": { "en": "seconds" },
+        "min": 10,
+        "step": 1
+      }
+    ]
+  },
+  {
+    "type": "group",
+    "label": { "en": "tado° Home Information" },
+    "children": [
+      {
+        "id": "auto_assist_enabled",
+        "type": "label",
+        "label": { "en": "Auto Assist Enabled" },
+        "value": "Yes"
+      }
+    ]
+  }
+]

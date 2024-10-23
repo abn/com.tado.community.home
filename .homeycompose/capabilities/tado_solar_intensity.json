@@ -1,0 +1,14 @@
+{
+  "type": "number",
+  "title": {
+    "en": "Solar Intensity"
+  },
+  "getable": true,
+  "setable": false,
+  "unit": "%",
+  "decimals": 2,
+  "min": 0.0,
+  "max": 100.0,
+  "uiComponent": "sensor",
+  "icon": "/assets/icons/capabilities/tado_solar_intensity.svg"
+}

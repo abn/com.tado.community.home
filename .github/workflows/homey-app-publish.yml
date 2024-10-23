@@ -9,12 +9,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Publish Homey App
-        uses: athombv/github-action-homey-app-publish@master
+      - uses: abn/github-action-homey-app/setup@main
+
+      - uses: abn/github-action-homey-app/publish@main
         id: publish
         with:
           personal_access_token: ${{ secrets.HOMEY_PAT }}
-
-      - name: URL
-        run: |
-          echo "Manage your app at ${{ steps.publish.outputs.url }}." >> $GITHUB_STEP_SUMMARY

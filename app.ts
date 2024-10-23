@@ -1,14 +1,12 @@
-'use strict';
+import { OAuth2App } from "homey-oauth2app";
+import { TadoOAuth2Client } from "./lib/tado-oauth2-client";
 
-import Homey from 'homey';
+module.exports = class TadoHomeApp extends OAuth2App<TadoOAuth2Client> {
+    static override OAUTH2_CLIENT = TadoOAuth2Client;
+    static override OAUTH2_DEBUG = true;
+    static override OAUTH2_MULTI_SESSION = false;
 
-module.exports = class MyApp extends Homey.App {
-
-  /**
-   * onInit is called when the app is initialized.
-   */
-  async onInit() {
-    this.log('MyApp has been initialized');
-  }
-
-}
+    override async onOAuth2Init(): Promise<void> {
+        this.log("tado° Home Manager has been initialized");
+    }
+};

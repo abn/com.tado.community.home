@@ -1,0 +1,29 @@
+{
+  "type": "enum",
+  "title": {
+    "en": "Geofencing Mode"
+  },
+  "getable": true,
+  "setable": true,
+  "values": [
+    {
+      "id": "auto",
+      "title": {
+        "en": "Auto"
+      }
+    },
+    {
+      "id": "home",
+      "title": {
+        "en": "Home"
+      }
+    },
+    {
+      "id": "away",
+      "title": {
+        "en": "Away"
+      }
+    }
+  ],
+  "uiComponent": "picker"
+}

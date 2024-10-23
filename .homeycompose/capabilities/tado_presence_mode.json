@@ -1,0 +1,24 @@
+{
+  "type": "enum",
+  "title": {
+    "en": "Presence Mode"
+  },
+  "getable": true,
+  "setable": false,
+  "values": [
+    {
+      "id": "home",
+      "title": {
+        "en": "Home"
+      }
+    },
+    {
+      "id": "away",
+      "title": {
+        "en": "Away"
+      }
+    }
+  ],
+  "uiComponent": "sensor",
+  "icon": "/assets/icons/capabilities/tado_presence_mode.svg"
+}

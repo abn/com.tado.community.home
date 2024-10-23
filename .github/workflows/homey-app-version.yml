@@ -27,12 +27,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Update Homey App Version
-        uses: athombv/github-action-homey-app-version@master
-        id: update_app_version
+      - uses: abn/github-action-homey-app/setup@main
+
+      - uses: abn/github-action-homey-app/version@main
         with:
-          version: ${{ inputs.version }}
-          changelog: ${{ inputs.changelog }}
+          changelog: "${{ inputs.changelog }}"
+          next: "${{ inputs.version }}"
 
       - name: Commit & Push
         run: |

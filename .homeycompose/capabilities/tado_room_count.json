@@ -1,0 +1,11 @@
+{
+  "type": "number",
+  "title": {
+    "en": "Rooms"
+  },
+  "getable": true,
+  "setable": false,
+  "step": 1,
+  "uiComponent": "sensor",
+  "icon": "/assets/icons/capabilities/tado_room_count.svg"
+}
