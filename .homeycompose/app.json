@@ -1,0 +1,28 @@
+{
+  "id": "com.tado.community.home",
+  "version": "1.0.0",
+  "compatibility": ">=5.0.0",
+  "sdk": 3,
+  "platforms": [
+    "local"
+  ],
+  "name": {
+    "en": "tado° Home Manager"
+  },
+  "description": {
+    "en": "Adds support for a tado° Homes and Rooms as devices. This only provides capabilities that are not available in the official app by Athom."
+  },
+  "category": [
+    "climate"
+  ],
+  "permissions": [],
+  "images": {
+    "small": "/assets/images/small.png",
+    "large": "/assets/images/large.png",
+    "xlarge": "/assets/images/xlarge.png"
+  },
+  "author": {
+    "name": "Arun Neelicattu",
+    "email": "arun.neelicattu@gmail.com"
+  }
+}
