@@ -188,6 +188,7 @@
         "meter_power.daily_consumption_average",
         "meter_power.daily_consumption",
         "meter_power.monthly_consumption",
+        "tado_resume_schedule",
         "tado_geofencing_mode",
         "button.restart_polling"
       ],

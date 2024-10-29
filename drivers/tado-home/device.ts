@@ -62,6 +62,8 @@ module.exports = class TadoHomeDevice extends TadoApiDevice {
             await this.setGeofencingMode(value);
         });
 
+        this.registerCapabilityListener("tado_resume_schedule", this.resumeSchedule.bind(this));
+
         this.registerCapabilityListener("button.restart_polling", async () => {
             await this.intervalManager.restart();
         });
