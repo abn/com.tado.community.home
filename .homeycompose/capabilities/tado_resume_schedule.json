@@ -1,0 +1,10 @@
+{
+  "type": "boolean",
+  "uiComponent": "button",
+  "icon": "/assets/icons/capabilities/tado_resume_schedule.svg",
+  "title": {
+    "en": "Resume Schedule"
+  },
+  "getable": false,
+  "setable": true
+}
