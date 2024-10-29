@@ -44,12 +44,12 @@ module.exports = class TadoHomeDevice extends TadoApiDevice {
             },
         );
 
-        const resumeScheduleAction = this.homey.flow.getActionCard("resume_schedule");
+        const resumeScheduleAction = this.homey.flow.getActionCard("tado_home_resume_schedule");
         resumeScheduleAction.registerRunListener(async () => {
             await this.resumeSchedule();
         });
 
-        const boostHeatingAction = this.homey.flow.getActionCard("boost_heating");
+        const boostHeatingAction = this.homey.flow.getActionCard("tado_home_boost_heating");
         boostHeatingAction.registerRunListener(async () => {
             await this.boostHeating();
         });

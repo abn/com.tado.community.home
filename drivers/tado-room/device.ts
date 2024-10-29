@@ -25,7 +25,17 @@ module.exports = class TadoRoomDevice extends TadoApiDevice {
         };
     }
 
-    async registerFlows(): Promise<void> {}
+    async registerActionFlows(): Promise<void> {
+        const resumeScheduleAction = this.homey.flow.getActionCard("tado_room_resume_schedule");
+        resumeScheduleAction.registerRunListener(async () => {
+            await this.resumeSchedule();
+        });
+
+        const boostHeatingAction = this.homey.flow.getActionCard("tado_room_boost_heating");
+        boostHeatingAction.registerRunListener(async () => {
+            await this.api.setBoostHeatingOverlay(this.home_id, [this.id]);
+        });
+    }
 
     protected override async start(): Promise<void> {
         this.registerCapabilityListener("button.restart_polling", async () => {
@@ -39,7 +49,7 @@ module.exports = class TadoRoomDevice extends TadoApiDevice {
             await this.setRoomTargetTemperature(value, "AUTO");
         });
 
-        await this.registerFlows();
+        await this.registerActionFlows();
     }
 
     protected override async stop(): Promise<void> {

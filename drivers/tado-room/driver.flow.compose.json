@@ -1,0 +1,22 @@
+{
+  "actions": [
+    {
+      "id": "tado_room_resume_schedule",
+      "title": {
+        "en": "Resume room schedule"
+      },
+      "titleFormatted": {
+        "en": "Resume schedule in this rooms"
+      }
+    },
+    {
+      "id": "tado_room_boost_heating",
+      "title": {
+        "en": "Boost room heating"
+      },
+      "titleFormatted": {
+        "en": "Boost heating in this rooms"
+      }
+    }
+  ]
+}

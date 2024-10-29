@@ -142,9 +142,9 @@
         ]
       },
       {
-        "id": "resume_schedule",
+        "id": "tado_home_resume_schedule",
         "title": {
-          "en": "Resume schedule"
+          "en": "Resume home schedule"
         },
         "titleFormatted": {
           "en": "Resume schedule in all rooms"
@@ -158,9 +158,9 @@
         ]
       },
       {
-        "id": "boost_heating",
+        "id": "tado_home_boost_heating",
         "title": {
-          "en": "Boost heating"
+          "en": "Boost home heating"
         },
         "titleFormatted": {
           "en": "Boost heating in all rooms"
@@ -170,6 +170,38 @@
             "type": "device",
             "name": "device",
             "filter": "driver_id=tado-home"
+          }
+        ]
+      },
+      {
+        "id": "tado_room_resume_schedule",
+        "title": {
+          "en": "Resume room schedule"
+        },
+        "titleFormatted": {
+          "en": "Resume schedule in this rooms"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=tado-room"
+          }
+        ]
+      },
+      {
+        "id": "tado_room_boost_heating",
+        "title": {
+          "en": "Boost room heating"
+        },
+        "titleFormatted": {
+          "en": "Boost heating in this rooms"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=tado-room"
           }
         ]
       }
