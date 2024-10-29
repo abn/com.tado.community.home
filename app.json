@@ -369,14 +369,17 @@
       ]
     },
     {
-      "name": {
-        "en": "tado° Zone"
-      },
       "class": "other",
       "capabilities": [
+        "onoff",
+        "tado_presence_mode",
+        "measure_humidity",
+        "measure_temperature",
+        "target_temperature",
+        "tado_resume_schedule",
         "button.restart_polling"
       ],
-      "capabilityOptions": {
+      "capabilitiesOptions": {
         "button.restart_polling": {
           "maintenanceAction": true,
           "title": {
@@ -385,6 +388,10 @@
           "desc": {
             "en": "Forces a restart of API polling and refreshes data."
           }
+        },
+        "target_temperature": {
+          "min": 5,
+          "max": 25
         }
       },
       "platforms": [
@@ -394,9 +401,9 @@
         "cloud"
       ],
       "images": {
-        "small": "/drivers/tado-zone/assets/images/small.png",
-        "large": "/drivers/tado-zone/assets/images/large.png",
-        "xlarge": "/drivers/tado-zone/assets/images/xlarge.png"
+        "small": "/drivers/tado-room/assets/images/small.png",
+        "large": "/drivers/tado-room/assets/images/large.png",
+        "xlarge": "/drivers/tado-room/assets/images/xlarge.png"
       },
       "pair": [
         {
@@ -421,7 +428,36 @@
           "template": "login_credentials"
         }
       ],
-      "id": "tado-zone"
+      "name": {
+        "en": "tado° Room"
+      },
+      "id": "tado-room",
+      "settings": [
+        {
+          "type": "group",
+          "label": {
+            "en": "tado° API Polling Intervals"
+          },
+          "children": [
+            {
+              "id": "room_state_polling_interval",
+              "type": "number",
+              "label": {
+                "en": "Room information"
+              },
+              "value": 60,
+              "hint": {
+                "en": "Polling interval to check for room information changes."
+              },
+              "units": {
+                "en": "seconds"
+              },
+              "min": 10,
+              "step": 1
+            }
+          ]
+        }
+      ]
     }
   ],
   "capabilities": {
@@ -477,6 +513,16 @@
       ],
       "uiComponent": "sensor",
       "icon": "/assets/icons/capabilities/tado_presence_mode.svg"
+    },
+    "tado_resume_schedule": {
+      "type": "boolean",
+      "uiComponent": "button",
+      "icon": "/assets/icons/capabilities/tado_resume_schedule.svg",
+      "title": {
+        "en": "Resume Schedule"
+      },
+      "getable": false,
+      "setable": true
     },
     "tado_room_count": {
       "type": "number",

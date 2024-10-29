@@ -1,0 +1,26 @@
+{
+  "$extends": "tado",
+  "name": {
+    "en": "tado° Room"
+  },
+  "capabilities": [
+    "onoff",
+    "tado_presence_mode",
+    "measure_humidity",
+    "measure_temperature",
+    "target_temperature",
+    "tado_resume_schedule",
+    "button.restart_polling"
+  ],
+  "capabilitiesOptions": {
+    "button.restart_polling": {
+      "maintenanceAction": true,
+      "title": { "en": "Restart API Polling" },
+      "desc": { "en": "Forces a restart of API polling and refreshes data." }
+    },
+    "target_temperature": {
+      "min": 5.0,
+      "max": 25.0
+    }
+  }
+}

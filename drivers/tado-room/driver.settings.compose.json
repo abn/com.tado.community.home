@@ -1,0 +1,18 @@
+[
+  {
+    "type": "group",
+    "label": { "en": "tado° API Polling Intervals" },
+    "children": [
+      {
+        "id": "room_state_polling_interval",
+        "type": "number",
+        "label": { "en": "Room information" },
+        "value": 60,
+        "hint": { "en": "Polling interval to check for room information changes." },
+        "units": { "en": "seconds" },
+        "min": 10,
+        "step": 1
+      }
+    ]
+  }
+]
