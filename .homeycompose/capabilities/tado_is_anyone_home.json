@@ -1,0 +1,11 @@
+{
+  "type": "boolean",
+  "uiComponent": "sensor",
+  "title": {
+    "en": "Someone is home"
+  },
+  "getable": true,
+  "setable": false,
+  "uiComponent": null,
+  "icon": "/assets/icons/capabilities/tado_is_anyone_home.svg"
+}
