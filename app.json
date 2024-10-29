@@ -80,7 +80,7 @@
         ]
       },
       {
-        "id": "tado_weather_state",
+        "id": "tado_weather_state_changed",
         "title": {
           "en": "When tado° weather state changes"
         },
@@ -93,6 +93,32 @@
             }
           }
         ],
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=tado-home"
+          }
+        ]
+      },
+      {
+        "id": "tado_is_anyone_home_true",
+        "title": {
+          "en": "The first person came home"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=tado-home"
+          }
+        ]
+      },
+      {
+        "id": "tado_is_anyone_home_false",
+        "title": {
+          "en": "The last person left home"
+        },
         "args": [
           {
             "type": "device",
@@ -222,6 +248,7 @@
         "meter_power.monthly_consumption",
         "tado_resume_schedule",
         "tado_geofencing_mode",
+        "tado_is_anyone_home",
         "button.restart_polling"
       ],
       "capabilitiesOptions": {
@@ -522,6 +549,16 @@
         }
       ],
       "uiComponent": "picker"
+    },
+    "tado_is_anyone_home": {
+      "type": "boolean",
+      "uiComponent": null,
+      "title": {
+        "en": "Someone is home"
+      },
+      "getable": true,
+      "setable": false,
+      "icon": "/assets/icons/capabilities/tado_is_anyone_home.svg"
     },
     "tado_presence_mode": {
       "type": "enum",

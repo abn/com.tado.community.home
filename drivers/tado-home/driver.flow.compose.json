@@ -31,7 +31,7 @@
       ]
     },
     {
-      "id": "tado_weather_state",
+      "id": "tado_weather_state_changed",
       "title": {
         "en": "When tado° weather state changes"
       },
@@ -44,6 +44,18 @@
           }
         }
       ]
+    },
+    {
+      "id": "tado_is_anyone_home_true",
+      "title": {
+        "en": "The first person came home"
+      }
+    },
+    {
+      "id": "tado_is_anyone_home_false",
+      "title": {
+        "en": "The last person left home"
+      }
     }
   ],
 

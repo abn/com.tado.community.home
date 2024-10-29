@@ -20,13 +20,16 @@ module.exports = class TadoHomeDriver extends OAuth2Driver<TadoOAuth2Client> {
                 data: {
                     id: home.id,
                 },
+                // we do this here to avoid creating EIQ insights metric for non-auto-assist users
                 capabilities: [
                     "tado_presence_mode",
                     "tado_weather_state",
                     "measure_temperature.outside",
                     "tado_solar_intensity",
                     "tado_room_count",
+                    "tado_resume_schedule",
                     "tado_geofencing_mode",
+                    "tado_is_anyone_home",
                     "button.restart_polling",
                 ],
             };

@@ -15,6 +15,7 @@
     "meter_power.monthly_consumption",
     "tado_resume_schedule",
     "tado_geofencing_mode",
+    "tado_is_anyone_home",
     "button.restart_polling"
   ],
   "capabilitiesOptions": {

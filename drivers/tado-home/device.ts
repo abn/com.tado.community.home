@@ -1,7 +1,7 @@
 import { TadoApiDevice } from "../../lib/tado-api-device";
 
 import type { IntervalConfigurationCollection } from "homey-interval-manager";
-import type { EnergyIQConsumptionDetails, State, StatePresence } from "node-tado-client";
+import type { EnergyIQConsumptionDetails, State, StatePresence, TadoMode } from "node-tado-client";
 
 module.exports = class TadoHomeDevice extends TadoApiDevice {
     private get id(): number {
@@ -83,13 +83,13 @@ module.exports = class TadoHomeDevice extends TadoApiDevice {
      * ------------------------------------------------------------------
      */
 
-    private async setDevicePresenceMode(value: StatePresence & ["HOME" | "AWAY"]): Promise<void> {
+    private async setTadoPresenceMode(value: TadoMode): Promise<void> {
         await this.setCapabilityValue("tado_presence_mode", value.toLowerCase());
     }
 
     private async getCurrentHomeState(): Promise<State> {
         const state = await this.api.getState(this.id);
-        await this.setDevicePresenceMode(state.presence as StatePresence & ["HOME" | "AWAY"]);
+        await this.setTadoPresenceMode(state.presence as TadoMode);
         return state;
     }
 
@@ -101,7 +101,15 @@ module.exports = class TadoHomeDevice extends TadoApiDevice {
 
     private async getCurrentGeofencingMode(): Promise<string> {
         const state = await this.getCurrentHomeState();
-        return state.presenceLocked || !this.isAutoAssistEnabled() ? state.presence.toLowerCase() : "auto";
+        const isAutoAssistEnabled = this.isAutoAssistEnabled();
+
+        // this allows for non auto assist enabled users to rely on mobile device locations
+        await this.setCapabilityValue(
+            "tado_is_anyone_home",
+            isAutoAssistEnabled ? state.presence.toLowerCase() == "home" : await this.api.isAnyoneAtHome(this.id),
+        );
+
+        return state.presenceLocked || !isAutoAssistEnabled ? state.presence.toLowerCase() : "auto";
     }
 
     public async syncGeofencingMode(): Promise<void> {
