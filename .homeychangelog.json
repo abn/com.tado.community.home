@@ -1,5 +1,8 @@
 {
   "1.0.0": {
     "en": "First release version"
+  },
+  "1.0.1": {
+    "en": "Fix authentication scope and home resume schedule button"
   }
 }
