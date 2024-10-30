@@ -101,6 +101,7 @@ module.exports = class TadoRoomDevice extends TadoApiDevice {
             )
             .then(async () => {
                 await this.setCapabilityValue("target_temperature", targetValue);
+                await this.setCapabilityValue("onoff", !isOff);
             })
             .catch(async (...args) => {
                 await this.setCapabilityValue("target_temperature", previousValue);
