@@ -1,6 +1,9 @@
 name: Publish Homey App
 on:
   workflow_dispatch:
+  push:
+    tags:
+      - v**
 
 jobs:
   main:

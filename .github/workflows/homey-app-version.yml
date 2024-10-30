@@ -35,16 +35,14 @@ jobs:
           next: "${{ inputs.version }}"
 
       - name: Commit & Push
-        run: |
-          git config --local user.name "github-actions[bot]"
-          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          file_pattern: ".homeychangelog.json .homeycompose/app.json app.json"
+          commit_message: "Update Homey App Version to v${{ steps.version-update.outputs.new-version }}"
 
-          git add -A
-          git commit -m "Update Homey App Version to v${{ steps.update_app_version.outputs.version }}"
-          git tag "v${{ steps.update_app_version.outputs.version }}"
-
-          git push origin HEAD --tags
-          gh release create "v${{ steps.update_app_version.outputs.version }}" -t "v${{ steps.update_app_version.outputs.version }}" --notes "" --generate-notes
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_TOKEN: ${{ github.token }}
+      - name: Create Release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: "v${{ steps.version-update.outputs.new-version }}"
+          generateReleaseNotes: true
+          makeLatest: true
