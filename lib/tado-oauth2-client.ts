@@ -9,7 +9,7 @@ export class TadoOAuth2Client extends OAuth2Client<OAuth2Token> {
     static override API_URL = "https://my.tado.com/api/v2";
     static override TOKEN_URL = "https://auth.tado.com/oauth/token";
     static override AUTHORIZATION_URL = "https://auth.tado.com/oauth/authorize";
-    static override SCOPES = ["home"];
+    // static override SCOPES = ["home"];
 
     // source: https://support.tado.com/en/articles/8565472-how-do-i-update-my-rest-api-authentication-method-to-oauth-2
     static override CLIENT_ID = "public-api-preview";
