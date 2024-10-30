@@ -40,7 +40,7 @@ module.exports = class TadoHomeDevice extends TadoApiDevice {
         meterReadingReportAction.registerRunListener(
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             async (args: { date?: string; reading: number }, state: unknown) => {
-                await this.api.addEnergyIQMeterReading(this.id, args.date || this.api.dateString(), args.reading);
+                await this.api.addEnergyIQMeterReading(this.id, this.formatFlowArgDate(args.date), args.reading);
             },
         );
 
@@ -80,10 +80,24 @@ module.exports = class TadoHomeDevice extends TadoApiDevice {
     protected override async migrate(): Promise<void> {}
 
     /**
-     * ------------------------------------------------------------------
-     * Helper Functions
-     * ------------------------------------------------------------------
+     * Formats a string date in DD-MM-YYYY format to a standardized date string usable by tado
+     * in the format YYYY-MM-DD. This is useful for handling Homey's #Date tag input.
+     *
+     * @param date - The date string in DD-MM-YYYY format, defaults to today.
+     * @return The formatted date string.
      */
+    private formatFlowArgDate(date?: string | undefined): string {
+        if (!date) return this.api.dateString();
+
+        const datePattern = /^\d{2}-\d{2}-\d{4}$/;
+        if (!datePattern.test(date.trim())) {
+            throw new Error("Invalid date format. Please use DD-MM-YYYY.");
+        }
+
+        const [day, month, year] = date.trim().split("-").map(Number);
+
+        return this.api.dateString(new Date(year, month - 1, day));
+    }
 
     private async setTadoPresenceMode(value: TadoMode): Promise<void> {
         await this.setCapabilityValue("tado_presence_mode", value.toLowerCase());
