@@ -107,6 +107,7 @@
       "title": {
         "en": "Boost home heating"
       },
+      "duration": true,
       "titleFormatted": {
         "en": "Boost heating in all rooms"
       }

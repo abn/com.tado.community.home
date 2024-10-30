@@ -32,8 +32,9 @@ module.exports = class TadoRoomDevice extends TadoApiDevice {
         });
 
         const boostHeatingAction = this.homey.flow.getActionCard("tado_room_boost_heating");
-        boostHeatingAction.registerRunListener(async () => {
-            await this.api.setBoostHeatingOverlay(this.home_id, [this.id]);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        boostHeatingAction.registerRunListener(async (args: { duration?: number }, state: unknown) => {
+            await this.api.setBoostHeatingOverlay(this.home_id, [this.id], args.duration ? args.duration / 1000 : 1800);
         });
     }
 

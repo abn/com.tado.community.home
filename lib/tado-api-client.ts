@@ -18,7 +18,11 @@ export class TadoApiClient extends Tado {
         return parts.join("-");
     }
 
-    public async setBoostHeatingOverlay(homeId: number, zoneIds: number[]): Promise<void> {
+    public async setBoostHeatingOverlay(
+        homeId: number,
+        zoneIds: number[],
+        durationSeconds: number = 1800,
+    ): Promise<void> {
         await this.setZoneOverlays(
             homeId,
             zoneIds.map((zoneId) => {
@@ -32,7 +36,7 @@ export class TadoApiClient extends Tado {
                     zone_id: zoneId,
                 };
             }),
-            1800,
+            durationSeconds,
         );
     }
 }

@@ -50,8 +50,9 @@ module.exports = class TadoHomeDevice extends TadoApiDevice {
         });
 
         const boostHeatingAction = this.homey.flow.getActionCard("tado_home_boost_heating");
-        boostHeatingAction.registerRunListener(async () => {
-            await this.boostHeating();
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        boostHeatingAction.registerRunListener(async (args: { duration?: number }, state: unknown) => {
+            await this.boostHeating({ durationSeconds: args.duration ? args.duration / 1000 : 1800 });
         });
     }
 
@@ -226,8 +227,18 @@ module.exports = class TadoHomeDevice extends TadoApiDevice {
         await this.api.clearZoneOverlays(this.id, zoneIds.length > 0 ? zoneIds : await this.getActiveZoneIds());
     }
 
-    public async boostHeating(...zoneIds: number[]): Promise<void> {
-        await this.api.setBoostHeatingOverlay(this.id, zoneIds.length > 0 ? zoneIds : await this.getActiveZoneIds());
+    public async boostHeating({
+        zoneIds,
+        durationSeconds,
+    }: {
+        zoneIds?: number[];
+        durationSeconds?: number;
+    }): Promise<void> {
+        await this.api.setBoostHeatingOverlay(
+            this.id,
+            zoneIds && zoneIds.length > 0 ? zoneIds : await this.getActiveZoneIds(),
+            durationSeconds ?? 1800,
+        );
     }
 
     /**

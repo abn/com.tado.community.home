@@ -188,6 +188,7 @@
         "title": {
           "en": "Boost home heating"
         },
+        "duration": true,
         "titleFormatted": {
           "en": "Boost heating in all rooms"
         },
@@ -220,6 +221,7 @@
         "title": {
           "en": "Boost room heating"
         },
+        "duration": true,
         "titleFormatted": {
           "en": "Boost heating in this rooms"
         },
