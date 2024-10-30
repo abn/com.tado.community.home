@@ -4,5 +4,8 @@
   },
   "1.0.1": {
     "en": "Fix authentication scope and home resume schedule button"
+  },
+  "1.0.2": {
+    "en": "Support date tag in gas meter reproting flow. Add support for duration in home/room boost action flows."
   }
 }
