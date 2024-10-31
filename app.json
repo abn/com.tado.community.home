@@ -439,6 +439,7 @@
         "measure_temperature",
         "target_temperature",
         "tado_resume_schedule",
+        "tado_heating_power",
         "button.restart_polling"
       ],
       "capabilitiesOptions": {
@@ -551,6 +552,24 @@
         }
       ],
       "uiComponent": "picker"
+    },
+    "tado_heating_power": {
+      "type": "number",
+      "title": {
+        "en": "Heating Power"
+      },
+      "getable": true,
+      "setable": false,
+      "units": {
+        "en": "%"
+      },
+      "insights": true,
+      "chartType": "spline",
+      "decimals": 2,
+      "min": 0,
+      "max": 100,
+      "uiComponent": "sensor",
+      "icon": "/assets/icons/capabilities/tado_heating_power.svg"
     },
     "tado_is_anyone_home": {
       "type": "boolean",

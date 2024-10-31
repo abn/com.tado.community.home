@@ -10,6 +10,7 @@
     "measure_temperature",
     "target_temperature",
     "tado_resume_schedule",
+    "tado_heating_power",
     "button.restart_polling"
   ],
   "capabilitiesOptions": {
