@@ -10,7 +10,7 @@
     "en": "tado° Home Manager"
   },
   "description": {
-    "en": "Adds support for a tado° Homes and Rooms as devices. This only provides capabilities that are not available in the official app by Athom."
+    "en": "Bring tado° Homes and Rooms to Homey."
   },
   "category": [
     "climate"
