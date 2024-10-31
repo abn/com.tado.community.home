@@ -614,7 +614,11 @@
       },
       "getable": true,
       "setable": false,
-      "unit": "%",
+      "units": {
+        "en": "%"
+      },
+      "insights": true,
+      "chartType": "spline",
       "decimals": 2,
       "min": 0,
       "max": 100,
