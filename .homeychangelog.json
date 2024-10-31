@@ -13,5 +13,8 @@
   },
   "1.1.0": {
     "en": "Update app description and flow card titles. Add support for boost heating button (Home, Room). Add heating power sensor (Room)."
+  },
+  "1.1.1": {
+    "en": "Update app description for certification."
   }
 }
