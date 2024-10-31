@@ -1,0 +1,10 @@
+{
+  "type": "boolean",
+  "uiComponent": "button",
+  "icon": "/assets/icons/capabilities/tado_boost_heating.svg",
+  "title": {
+    "en": "Boost Heating"
+  },
+  "getable": false,
+  "setable": true
+}

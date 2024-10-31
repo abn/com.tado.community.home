@@ -63,6 +63,10 @@ module.exports = class TadoHomeDevice extends TadoApiDevice {
             await this.setGeofencingMode(value);
         });
 
+        this.registerCapabilityListener("tado_boost_heating", async (value) => {
+            if (value) await this.boostHeating({ durationSeconds: 1800 });
+        });
+
         this.registerCapabilityListener("tado_resume_schedule", async (value) => {
             if (value) await this.resumeSchedule();
         });
@@ -78,7 +82,12 @@ module.exports = class TadoHomeDevice extends TadoApiDevice {
         await super.stop();
     }
 
-    protected override async migrate(): Promise<void> {}
+    protected override async migrate(): Promise<void> {
+        await this.migrateAddCapabilities(
+            // Available from v1.0.4
+            "tado_boost_heating",
+        );
+    }
 
     /**
      * Formats a string date in DD-MM-YYYY format to a standardized date string usable by tado

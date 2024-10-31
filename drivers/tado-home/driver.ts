@@ -28,6 +28,7 @@ module.exports = class TadoHomeDriver extends OAuth2Driver<TadoOAuth2Client> {
                     "tado_solar_intensity",
                     "tado_room_count",
                     "tado_resume_schedule",
+                    "tado_boost_heating",
                     "tado_geofencing_mode",
                     "tado_is_anyone_home",
                     "button.restart_polling",

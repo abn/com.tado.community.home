@@ -249,6 +249,7 @@
         "meter_power.daily_consumption",
         "meter_power.monthly_consumption",
         "tado_resume_schedule",
+        "tado_boost_heating",
         "tado_geofencing_mode",
         "tado_is_anyone_home",
         "button.restart_polling"
@@ -439,6 +440,7 @@
         "measure_temperature",
         "target_temperature",
         "tado_resume_schedule",
+        "tado_boost_heating",
         "tado_heating_power",
         "button.restart_polling"
       ],
@@ -524,6 +526,16 @@
     }
   ],
   "capabilities": {
+    "tado_boost_heating": {
+      "type": "boolean",
+      "uiComponent": "button",
+      "icon": "/assets/icons/capabilities/tado_boost_heating.svg",
+      "title": {
+        "en": "Boost Heating"
+      },
+      "getable": false,
+      "setable": true
+    },
     "tado_geofencing_mode": {
       "type": "enum",
       "title": {

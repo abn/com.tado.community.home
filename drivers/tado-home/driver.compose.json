@@ -14,6 +14,7 @@
     "meter_power.daily_consumption",
     "meter_power.monthly_consumption",
     "tado_resume_schedule",
+    "tado_boost_heating",
     "tado_geofencing_mode",
     "tado_is_anyone_home",
     "button.restart_polling"

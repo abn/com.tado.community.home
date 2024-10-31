@@ -44,6 +44,11 @@ module.exports = class TadoRoomDevice extends TadoApiDevice {
         });
 
         this.registerCapabilityListener("onoff", this.setOnOff.bind(this));
+
+        this.registerCapabilityListener("tado_boost_heating", async (value) => {
+            if (value) await this.api.setBoostHeatingOverlay(this.home_id, [this.id], 1800);
+        });
+
         this.registerCapabilityListener("tado_resume_schedule", this.resumeSchedule.bind(this));
 
         this.registerCapabilityListener("target_temperature", async (value) => {
@@ -60,6 +65,7 @@ module.exports = class TadoRoomDevice extends TadoApiDevice {
     protected override async migrate(): Promise<void> {
         await this.migrateAddCapabilities(
             // Available from v1.0.4
+            "tado_boost_heating",
             "tado_heating_power",
         );
     }
