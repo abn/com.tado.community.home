@@ -1,0 +1,18 @@
+{
+  "type": "number",
+  "title": {
+    "en": "Heating Power"
+  },
+  "getable": true,
+  "setable": false,
+  "units": {
+    "en": "%"
+  },
+  "insights": true,
+  "chartType": "spline",
+  "decimals": 2,
+  "min": 0.0,
+  "max": 100.0,
+  "uiComponent": "sensor",
+  "icon": "/assets/icons/capabilities/tado_heating_power.svg"
+}
