@@ -10,5 +10,8 @@
   },
   "1.0.3": {
     "en": "Do not change target temp when turning off heating."
+  },
+  "1.1.0": {
+    "en": "Update app description and flow card titles. Add support for boost heating button (Home, Room). Add heating power sensor (Room)."
   }
 }
