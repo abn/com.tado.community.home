@@ -3,7 +3,7 @@
     {
       "id": "tado_presence_mode_changed",
       "title": {
-        "en": "When tado° presence mode changes"
+        "en": "The home presence mode changed"
       },
       "tokens": [
         {
@@ -18,7 +18,7 @@
     {
       "id": "tado_solar_intensity_changed",
       "title": {
-        "en": "When tado° solar intensity changes"
+        "en": "The outside solar intensity changed"
       },
       "tokens": [
         {
@@ -33,7 +33,7 @@
     {
       "id": "tado_weather_state_changed",
       "title": {
-        "en": "When tado° weather state changes"
+        "en": "The outside weather state changed"
       },
       "tokens": [
         {
