@@ -232,6 +232,89 @@
             "filter": "driver_id=tado-room"
           }
         ]
+      },
+      {
+        "id": "target_temperature_set",
+        "highlight": true,
+        "title": {
+          "en": "Set the temperature"
+        },
+        "titleFormatted": {
+          "en": "Set the temperature to [[temperature]]"
+        },
+        "duration": true,
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=tado-room"
+          },
+          {
+            "name": "temperature",
+            "type": "range",
+            "label": "°C",
+            "labelDecimals": 1,
+            "required": true,
+            "title": {
+              "en": "Temperature"
+            },
+            "step": 0.1,
+            "min": 5,
+            "max": 25
+          }
+        ]
+      },
+      {
+        "id": "target_temperature_set_until",
+        "highlight": true,
+        "title": {
+          "en": "Set the temperature"
+        },
+        "titleFormatted": {
+          "en": "Set the temperature to [[temperature]] until [[event]]"
+        },
+        "duration": false,
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=tado-room"
+          },
+          {
+            "name": "temperature",
+            "type": "range",
+            "label": "°C",
+            "labelDecimals": 1,
+            "required": false,
+            "title": {
+              "en": "Temperature"
+            },
+            "step": 0.1,
+            "min": 5,
+            "max": 25
+          },
+          {
+            "type": "dropdown",
+            "name": "event",
+            "title": {
+              "en": "Event"
+            },
+            "values": [
+              {
+                "id": "NEXT_TIME_BLOCK",
+                "title": {
+                  "en": "Next scheduled change"
+                }
+              },
+              {
+                "id": "AUTO",
+                "title": {
+                  "en": "Next scheduled or presence change"
+                }
+              }
+            ]
+          }
+        ]
       }
     ]
   },

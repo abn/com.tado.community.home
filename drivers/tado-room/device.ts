@@ -34,8 +34,18 @@ module.exports = class TadoRoomDevice extends TadoApiDevice {
         const boostHeatingAction = this.homey.flow.getActionCard("tado_room_boost_heating");
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         boostHeatingAction.registerRunListener(async (args: { duration?: number }, state: unknown) => {
-            await this.api.setBoostHeatingOverlay(this.home_id, [this.id], args.duration ? args.duration / 1000 : 1800);
+            await this.api.setBoostHeatingOverlay(
+                this.home_id,
+                [this.id],
+                this.convertFlowDurationToSeconds(args.duration),
+            );
         });
+
+        const setTemperatureAction = this.homey.flow.getActionCard("target_temperature_set");
+        setTemperatureAction.registerRunListener(this.setTemperatureFlowListener.bind(this));
+
+        const setTemperatureUntilAction = this.homey.flow.getActionCard("target_temperature_set_until");
+        setTemperatureUntilAction.registerRunListener(this.setTemperatureFlowListener.bind(this));
     }
 
     protected override async start(): Promise<void> {
@@ -51,6 +61,7 @@ module.exports = class TadoRoomDevice extends TadoApiDevice {
         });
 
         await this.registerActionFlows();
+        this.log(this.homey.act);
     }
 
     protected override async stop(): Promise<void> {
@@ -64,6 +75,20 @@ module.exports = class TadoRoomDevice extends TadoApiDevice {
      * Helper Functions
      * ------------------------------------------------------------------
      */
+    protected async setTemperatureFlowListener(args: {
+        temperature: number;
+        event?: Termination | "DURATION";
+        duration?: number;
+    }): Promise<void> {
+        const durationSeconds = this.convertFlowDurationToSeconds(args.duration);
+        const termination = args.event === "DURATION" ? durationSeconds : (args.event ?? durationSeconds);
+        await this.setRoomTargetTemperature(args.temperature, termination);
+    }
+
+    protected convertFlowDurationToSeconds(duration: number | undefined, defaultSeconds = 1800): number {
+        return duration ? duration / 1000 : defaultSeconds;
+    }
+
     protected async resumeSchedule(): Promise<void> {
         await this.api.clearZoneOverlays(this.home_id, [this.id]);
     }
