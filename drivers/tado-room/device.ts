@@ -82,7 +82,6 @@ module.exports = class TadoRoomDevice extends TadoApiDevice {
     ): Promise<void> {
         const isOff = value < 5.0;
         const previousValue = this.getCapabilityValue("target_temperature");
-        const targetValue = Math.max(Math.min(value, 25.0), 5.0);
 
         await this.api
             .setZoneOverlays(
@@ -94,14 +93,16 @@ module.exports = class TadoRoomDevice extends TadoApiDevice {
                         temperature: isOff
                             ? null
                             : {
-                                  celsius: targetValue,
+                                  // the api only allows a supported range of 5–25°C
+                                  celsius: Math.max(Math.min(value, 25.0), 5.0),
                               },
                     },
                 ],
                 termination,
             )
             .then(async () => {
-                await this.setCapabilityValue("target_temperature", targetValue);
+                // we reset value to ensure turning off does not change the value
+                await this.setCapabilityValue("target_temperature", isOff ? previousValue : Math.max(0.0, value));
                 await this.setCapabilityValue("onoff", !isOff);
             })
             .catch(async (...args) => {
@@ -120,9 +121,13 @@ module.exports = class TadoRoomDevice extends TadoApiDevice {
         // await this.setCapabilityValue("alarm_connectivity", state.link.state == "ONLINE");
         await this.setCapabilityValue("measure_humidity", state.sensorDataPoints.humidity.percentage);
         await this.setCapabilityValue("measure_temperature", state.sensorDataPoints.insideTemperature.celsius);
-        await this.setCapabilityValue("target_temperature", state.setting.temperature?.celsius ?? 4.0);
         await this.setCapabilityValue("tado_presence_mode", state.tadoMode.toLowerCase());
-        await this.setCapabilityValue("onoff", state.setting.power == "ON");
+
+        const isTurnedOn = state.setting.power == "ON";
+        await this.setCapabilityValue("onoff", isTurnedOn);
+
+        if (state.setting.temperature?.celsius || isTurnedOn)
+            await this.setCapabilityValue("target_temperature", state.setting.temperature?.celsius ?? 5.0);
     }
 
     /**
