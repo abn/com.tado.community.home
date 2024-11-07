@@ -16,5 +16,8 @@
   },
   "1.1.1": {
     "en": "Update app description for certification."
+  },
+  "1.1.2": {
+    "en": "Fix device repair login (upgrade homey-oauth2app)"
   }
 }
