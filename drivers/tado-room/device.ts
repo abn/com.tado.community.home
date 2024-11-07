@@ -140,12 +140,14 @@ module.exports = class TadoRoomDevice extends TadoApiDevice {
         if (state.setting.temperature?.celsius || isTurnedOn)
             await this.setCapabilityValue("target_temperature", state.setting.temperature?.celsius ?? 5.0);
 
-        await this.setCapabilityValue(
-            "tado_heating_power",
-            state.activityDataPoints.heatingPower?.type == "PERCENTAGE"
-                ? state.activityDataPoints.heatingPower.percentage
-                : 0.0,
-        );
+        if ("heatingPower" in state.activityDataPoints) {
+            await this.setCapabilityValue(
+                "tado_heating_power",
+                state.activityDataPoints.heatingPower?.type == "PERCENTAGE"
+                    ? state.activityDataPoints.heatingPower.percentage
+                    : 0.0,
+            );
+        }
     }
 
     /**
