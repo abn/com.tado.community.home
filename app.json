@@ -206,7 +206,7 @@
           "en": "Resume room schedule"
         },
         "titleFormatted": {
-          "en": "Resume schedule in this rooms"
+          "en": "Resume schedule in this room"
         },
         "args": [
           {
@@ -223,7 +223,25 @@
         },
         "duration": true,
         "titleFormatted": {
-          "en": "Boost heating in this rooms"
+          "en": "Boost heating in this room"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=tado-room"
+          }
+        ]
+      }
+    ],
+    "conditions": [
+      {
+        "id": "tado_room_smart_schedule_status",
+        "title": {
+          "en": "Smart schedule is !{{on|off}}"
+        },
+        "hint": {
+          "en": "Checks if this room is on smart schedule."
         },
         "args": [
           {
@@ -435,6 +453,7 @@
       "class": "other",
       "capabilities": [
         "onoff",
+        "onoff.smart_schedule",
         "tado_presence_mode",
         "measure_humidity",
         "measure_temperature",
@@ -457,6 +476,15 @@
         "target_temperature": {
           "min": 5,
           "max": 25
+        },
+        "onoff.smart_schedule": {
+          "title": {
+            "en": "Smart Schedule"
+          },
+          "insights": true,
+          "settable": false,
+          "uiComponent": null,
+          "uiQuickAction": false
         }
       },
       "platforms": [

@@ -5,6 +5,7 @@
   },
   "capabilities": [
     "onoff",
+    "onoff.smart_schedule",
     "tado_presence_mode",
     "measure_humidity",
     "measure_temperature",
@@ -23,6 +24,13 @@
     "target_temperature": {
       "min": 5.0,
       "max": 25.0
+    },
+    "onoff.smart_schedule": {
+      "title": { "en": "Smart Schedule" },
+      "insights": true,
+      "settable": false,
+      "uiComponent": null,
+      "uiQuickAction": false
     }
   }
 }

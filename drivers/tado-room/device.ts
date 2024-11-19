@@ -38,6 +38,13 @@ module.exports = class TadoRoomDevice extends TadoApiDevice {
         });
     }
 
+    async registerConditionFlows(): Promise<void> {
+        const smartScheduledStatusCondition = this.homey.flow.getConditionCard("tado_room_smart_schedule_status");
+        smartScheduledStatusCondition.registerRunListener(async () => {
+            return this.getCapabilityValue("onoff.smart_schedule");
+        });
+    }
+
     protected override async start(): Promise<void> {
         this.registerCapabilityListener("button.restart_polling", async () => {
             await this.intervalManager.restart();
@@ -56,6 +63,7 @@ module.exports = class TadoRoomDevice extends TadoApiDevice {
         });
 
         await this.registerActionFlows();
+        await this.registerConditionFlows();
     }
 
     protected override async stop(): Promise<void> {
@@ -67,6 +75,8 @@ module.exports = class TadoRoomDevice extends TadoApiDevice {
             // Available from v1.0.4
             "tado_boost_heating",
             "tado_heating_power",
+            // Available from v1.1.3
+            "onoff.smart_schedule",
         );
     }
 
@@ -77,6 +87,7 @@ module.exports = class TadoRoomDevice extends TadoApiDevice {
      */
     protected async resumeSchedule(): Promise<void> {
         await this.api.clearZoneOverlays(this.home_id, [this.id]);
+        await this.setCapabilityValue("onoff.smart_schedule", true);
     }
 
     protected async setOnOff(value: boolean): Promise<void> {
@@ -133,6 +144,9 @@ module.exports = class TadoRoomDevice extends TadoApiDevice {
         await this.setCapabilityValue("measure_humidity", state.sensorDataPoints.humidity.percentage);
         await this.setCapabilityValue("measure_temperature", state.sensorDataPoints.insideTemperature.celsius);
         await this.setCapabilityValue("tado_presence_mode", state.tadoMode.toLowerCase());
+
+        const isSmartScheduleOn = state.overlayType === null;
+        await this.setCapabilityValue("onoff.smart_schedule", isSmartScheduleOn);
 
         const isTurnedOn = state.setting.power == "ON";
         await this.setCapabilityValue("onoff", isTurnedOn);

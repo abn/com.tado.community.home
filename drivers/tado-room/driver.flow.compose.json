@@ -19,5 +19,16 @@
         "en": "Boost heating in this room"
       }
     }
+  ],
+  "conditions": [
+    {
+      "id": "tado_room_smart_schedule_status",
+      "title": {
+        "en": "Smart schedule is !{{on|off}}"
+      },
+      "hint": {
+        "en": "Checks if this room is on smart schedule."
+      }
+    }
   ]
 }
