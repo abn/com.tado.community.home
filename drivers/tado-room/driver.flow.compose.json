@@ -6,7 +6,7 @@
         "en": "Resume room schedule"
       },
       "titleFormatted": {
-        "en": "Resume schedule in this rooms"
+        "en": "Resume schedule in this room"
       }
     },
     {
@@ -16,7 +16,7 @@
       },
       "duration": true,
       "titleFormatted": {
-        "en": "Boost heating in this rooms"
+        "en": "Boost heating in this room"
       }
     }
   ]
