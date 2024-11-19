@@ -19,5 +19,8 @@
   },
   "1.1.2": {
     "en": "Fix device repair login (upgrade homey-oauth2app)"
+  },
+  "1.1.3": {
+    "en": "Added new smart schedule status conditional flow for rooms."
   }
 }
