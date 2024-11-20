@@ -47,3 +47,8 @@ jobs:
           tag: "v${{ steps.version-update.outputs.new-version }}"
           generateReleaseNotes: true
           makeLatest: true
+
+      - uses: abn/github-action-homey-app/publish@main
+        id: publish
+        with:
+          personal_access_token: ${{ secrets.HOMEY_PAT }}
