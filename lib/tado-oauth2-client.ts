@@ -25,7 +25,7 @@ export class TadoOAuth2Client extends OAuth2Client<OAuth2Token> {
         method: keyof this & AllowedMethods = "get",
         data?: M extends PayloadMethods ? unknown : never,
     ): Promise<T> {
-        return this[method]({
+        return this[method.toLowerCase() as AllowedMethods]({
             path: url.replace("/api/v2", ""),
             json: data,
         });
