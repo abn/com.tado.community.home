@@ -28,7 +28,7 @@
     "onoff.smart_schedule": {
       "title": { "en": "Smart Schedule" },
       "insights": true,
-      "settable": false,
+      "setable": false,
       "uiComponent": null,
       "uiQuickAction": false
     }
