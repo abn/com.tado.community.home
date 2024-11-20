@@ -1,4 +1,18 @@
 {
+  "triggers": [
+    {
+      "id": "alarm_open_window_detected_true",
+      "title": {
+        "en": "Open window detected"
+      }
+    },
+    {
+      "id": "alarm_open_window_detected_false",
+      "title": {
+        "en": "Open window no longer detected"
+      }
+    }
+  ],
   "actions": [
     {
       "id": "tado_room_resume_schedule",
@@ -28,6 +42,12 @@
       },
       "hint": {
         "en": "Checks if this room is on smart schedule."
+      }
+    },
+    {
+      "id": "tado_room_open_window_detected",
+      "title": {
+        "en": "Open window !{{is|isn't}} detected"
       }
     }
   ]

@@ -1,0 +1,16 @@
+{
+  "type": "boolean",
+  "title": { "en": "Open window detected" },
+  "insights": true,
+  "insightsTitleTrue": {
+    "en": "Open window detected"
+  },
+  "insightsTitleFalse": {
+    "en": "Open window no longer detected"
+  },
+  "getable": true,
+  "setable": false,
+  "uiComponent": "sensor",
+  "uiQuickAction": false,
+  "icon": "/assets/icons/capabilities/alarm_open_window_detected.svg"
+}

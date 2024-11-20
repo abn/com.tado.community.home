@@ -43,6 +43,11 @@ module.exports = class TadoRoomDevice extends TadoApiDevice {
         smartScheduledStatusCondition.registerRunListener(async () => {
             return this.getCapabilityValue("onoff.smart_schedule");
         });
+
+        const openWindowDetectedCondition = this.homey.flow.getConditionCard("tado_room_open_window_detected");
+        openWindowDetectedCondition.registerRunListener(async () => {
+            return this.getCapabilityValue("alarm_open_window_detected");
+        });
     }
 
     protected override async start(): Promise<void> {
@@ -77,6 +82,8 @@ module.exports = class TadoRoomDevice extends TadoApiDevice {
             "tado_heating_power",
             // Available from v1.1.3
             "onoff.smart_schedule",
+            // Available from v1.1.4
+            "alarm_open_window_detected",
         );
     }
 
@@ -147,6 +154,9 @@ module.exports = class TadoRoomDevice extends TadoApiDevice {
 
         const isSmartScheduleOn = state.overlayType === null;
         await this.setCapabilityValue("onoff.smart_schedule", isSmartScheduleOn);
+
+        const isWindowOpen = state.openWindow !== null;
+        await this.setCapabilityValue("alarm_open_window_detected", isWindowOpen);
 
         const isTurnedOn = state.setting.power == "ON";
         await this.setCapabilityValue("onoff", isTurnedOn);
