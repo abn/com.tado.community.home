@@ -6,6 +6,7 @@
   "capabilities": [
     "onoff",
     "onoff.smart_schedule",
+    "onoff.early_start",
     "tado_presence_mode",
     "measure_humidity",
     "measure_temperature",
@@ -35,6 +36,17 @@
     },
     "onoff": {
       "title": { "en": "Heating" }
+    },
+    "onoff.early_start": {
+      "title": { "en": "Early Start" },
+      "insights": true,
+      "insightsTitleTrue": {
+        "en": "Early start enabled"
+      },
+      "insightsTitleFalse": {
+        "en": "Early start disabled"
+      },
+      "uiQuickAction": false
     }
   }
 }

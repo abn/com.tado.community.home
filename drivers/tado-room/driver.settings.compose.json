@@ -12,6 +12,16 @@
         "units": { "en": "seconds" },
         "min": 10,
         "step": 1
+      },
+      {
+        "id": "early_start_polling_interval",
+        "type": "number",
+        "label": { "en": "Early start configuration" },
+        "value": 60,
+        "hint": { "en": "Polling interval to check early start configuration changes." },
+        "units": { "en": "seconds" },
+        "min": 10,
+        "step": 1
       }
     ]
   }

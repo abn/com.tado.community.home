@@ -11,6 +11,18 @@
       "title": {
         "en": "Open window no longer detected"
       }
+    },
+    {
+      "id": "onoff.early_start_true",
+      "title": {
+        "en": "Early start enabled"
+      }
+    },
+    {
+      "id": "onoff.early_start_false",
+      "title": {
+        "en": "Early start disabled"
+      }
     }
   ],
   "actions": [
@@ -32,6 +44,21 @@
       "titleFormatted": {
         "en": "Boost heating in this room"
       }
+    },
+    {
+      "id": "tado_room_early_start_set",
+      "title": {
+        "en": "Set early start enabled to ..."
+      },
+      "titleFormatted": { "en": "Set early start enabled to [[enabled]]" },
+      "args": [
+        {
+          "type": "checkbox",
+          "name": "enabled",
+          "required": true,
+          "title": { "en": "Enabled" }
+        }
+      ]
     }
   ],
   "conditions": [
@@ -48,6 +75,12 @@
       "id": "tado_room_open_window_detected",
       "title": {
         "en": "Open window !{{is|isn't}} detected"
+      }
+    },
+    {
+      "id": "tado_room_early_start_status",
+      "title": {
+        "en": "Early start !{{is|isn't}} enabled"
       }
     }
   ]

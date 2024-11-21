@@ -22,6 +22,10 @@ module.exports = class TadoRoomDevice extends TadoApiDevice {
                 functionName: "syncRoomState",
                 settingName: "room_state_polling_interval",
             },
+            EARLY_START: {
+                functionName: "syncEarlyStart",
+                settingName: "early_start_polling_interval",
+            },
         };
     }
 
@@ -36,6 +40,12 @@ module.exports = class TadoRoomDevice extends TadoApiDevice {
         boostHeatingAction.registerRunListener(async (args: { duration?: number }, state: unknown) => {
             await this.api.setBoostHeatingOverlay(this.home_id, [this.id], args.duration ? args.duration / 1000 : 1800);
         });
+
+        const earlyStartSetAction = this.homey.flow.getActionCard("tado_room_early_start_set");
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        earlyStartSetAction.registerRunListener(async (args: { enabled: boolean }, state: unknown) => {
+            await this.setEarlyStart(args.enabled);
+        });
     }
 
     async registerConditionFlows(): Promise<void> {
@@ -48,6 +58,11 @@ module.exports = class TadoRoomDevice extends TadoApiDevice {
         openWindowDetectedCondition.registerRunListener(async () => {
             return this.getCapabilityValue("alarm_open_window_detected");
         });
+
+        const earlyStartStatusCondition = this.homey.flow.getConditionCard("tado_room_early_start_status");
+        earlyStartStatusCondition.registerRunListener(async () => {
+            return this.getCapabilityValue("onoff.early_start");
+        });
     }
 
     protected override async start(): Promise<void> {
@@ -56,6 +71,8 @@ module.exports = class TadoRoomDevice extends TadoApiDevice {
         });
 
         this.registerCapabilityListener("onoff", this.setOnOff.bind(this));
+
+        this.registerCapabilityListener("onoff.early_start", this.setEarlyStart.bind(this));
 
         this.registerCapabilityListener("tado_boost_heating", async (value) => {
             if (value) await this.api.setBoostHeatingOverlay(this.home_id, [this.id], 1800);
@@ -84,6 +101,7 @@ module.exports = class TadoRoomDevice extends TadoApiDevice {
             "onoff.smart_schedule",
             // Available from v1.1.4
             "alarm_open_window_detected",
+            "onoff.early_start",
         );
     }
 
@@ -103,6 +121,10 @@ module.exports = class TadoRoomDevice extends TadoApiDevice {
         } else {
             await this.setRoomTargetTemperature(0.0, "MANUAL");
         }
+    }
+
+    protected async setEarlyStart(value: boolean): Promise<void> {
+        await this.api.setZoneEarlyStart(this.home_id, this.id, value).catch(this.error);
     }
 
     protected async setRoomTargetTemperature(
@@ -172,6 +194,13 @@ module.exports = class TadoRoomDevice extends TadoApiDevice {
                     : 0.0,
             );
         }
+    }
+
+    public async syncEarlyStart(): Promise<void> {
+        await this.setCapabilityValue(
+            "onoff.early_start",
+            await this.api.isZoneEarlyStartEnabled(this.home_id, this.id),
+        );
     }
 
     /**

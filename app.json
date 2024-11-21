@@ -152,6 +152,32 @@
             "filter": "driver_id=tado-room"
           }
         ]
+      },
+      {
+        "id": "onoff.early_start_true",
+        "title": {
+          "en": "Early start enabled"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=tado-room"
+          }
+        ]
+      },
+      {
+        "id": "onoff.early_start_false",
+        "title": {
+          "en": "Early start disabled"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=tado-room"
+          }
+        ]
       }
     ],
     "actions": [
@@ -258,6 +284,30 @@
             "filter": "driver_id=tado-room"
           }
         ]
+      },
+      {
+        "id": "tado_room_early_start_set",
+        "title": {
+          "en": "Set early start enabled to ..."
+        },
+        "titleFormatted": {
+          "en": "Set early start enabled to [[enabled]]"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=tado-room"
+          },
+          {
+            "type": "checkbox",
+            "name": "enabled",
+            "required": true,
+            "title": {
+              "en": "Enabled"
+            }
+          }
+        ]
       }
     ],
     "conditions": [
@@ -281,6 +331,19 @@
         "id": "tado_room_open_window_detected",
         "title": {
           "en": "Open window !{{is|isn't}} detected"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=tado-room"
+          }
+        ]
+      },
+      {
+        "id": "tado_room_early_start_status",
+        "title": {
+          "en": "Early start !{{is|isn't}} enabled"
         },
         "args": [
           {
@@ -493,6 +556,7 @@
       "capabilities": [
         "onoff",
         "onoff.smart_schedule",
+        "onoff.early_start",
         "tado_presence_mode",
         "measure_humidity",
         "measure_temperature",
@@ -524,6 +588,24 @@
           "insights": true,
           "setable": false,
           "uiComponent": null,
+          "uiQuickAction": false
+        },
+        "onoff": {
+          "title": {
+            "en": "Heating"
+          }
+        },
+        "onoff.early_start": {
+          "title": {
+            "en": "Early Start"
+          },
+          "insights": true,
+          "insightsTitleTrue": {
+            "en": "Early start enabled"
+          },
+          "insightsTitleFalse": {
+            "en": "Early start disabled"
+          },
           "uiQuickAction": false
         }
       },
@@ -581,6 +663,22 @@
               "value": 60,
               "hint": {
                 "en": "Polling interval to check for room information changes."
+              },
+              "units": {
+                "en": "seconds"
+              },
+              "min": 10,
+              "step": 1
+            },
+            {
+              "id": "early_start_polling_interval",
+              "type": "number",
+              "label": {
+                "en": "Early start configuration"
+              },
+              "value": 60,
+              "hint": {
+                "en": "Polling interval to check early start configuration changes."
               },
               "units": {
                 "en": "seconds"

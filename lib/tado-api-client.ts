@@ -39,4 +39,21 @@ export class TadoApiClient extends Tado {
             durationSeconds,
         );
     }
+
+    /**
+     * TODO: Remove the following on next release of node-tado-client.
+     * https://github.com/mattdavis90/node-tado-client/pull/95
+     */
+    async isZoneEarlyStartEnabled(home_id: number, zone_id: number): Promise<boolean> {
+        const { enabled } = await this.apiCall<{ enabled: boolean }>(
+            `/api/v2/homes/${home_id}/zones/${zone_id}/earlyStart`,
+        );
+        return enabled;
+    }
+
+    setZoneEarlyStart(home_id: number, zone_id: number, enabled: boolean): Promise<void> {
+        return this.apiCall(`/api/v2/homes/${home_id}/zones/${zone_id}/earlyStart`, "PUT", {
+            enabled: enabled,
+        });
+    }
 }
