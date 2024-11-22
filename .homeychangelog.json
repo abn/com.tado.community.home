@@ -25,5 +25,8 @@
   },
   "1.2.0": {
     "en": "Added room open window detection and early start configuration. Minor bugixes."
+  },
+  "1.2.1": {
+    "en": "Update tado client to latest version."
   }
 }
