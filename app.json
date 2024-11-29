@@ -58,6 +58,28 @@
         ]
       },
       {
+        "id": "tado_geofencing_mode_changed",
+        "title": {
+          "en": "The geofencing mode changed"
+        },
+        "tokens": [
+          {
+            "name": "tado_geofencing_mode",
+            "type": "string",
+            "title": {
+              "en": "tado° geofencing mode"
+            }
+          }
+        ],
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=tado-home"
+          }
+        ]
+      },
+      {
         "id": "tado_solar_intensity_changed",
         "title": {
           "en": "The outside solar intensity changed"
