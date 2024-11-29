@@ -253,6 +253,54 @@
         ]
       },
       {
+        "id": "tado_home_set_geofencing_mode",
+        "title": {
+          "en": "Set geofencing mode to ..."
+        },
+        "titleFormatted": {
+          "en": "Set geofencing mode to [[mode]]"
+        },
+        "hint": {
+          "en": "If a duration is set and has elapsed, mode is set back to the current mode if not changed elsewhere."
+        },
+        "duration": true,
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=tado-home"
+          },
+          {
+            "type": "dropdown",
+            "name": "mode",
+            "required": true,
+            "title": {
+              "en": "Mode"
+            },
+            "values": [
+              {
+                "id": "auto",
+                "title": {
+                  "en": "auto"
+                }
+              },
+              {
+                "id": "home",
+                "title": {
+                  "en": "home"
+                }
+              },
+              {
+                "id": "away",
+                "title": {
+                  "en": "away"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
         "id": "tado_room_resume_schedule",
         "title": {
           "en": "Resume room schedule"
