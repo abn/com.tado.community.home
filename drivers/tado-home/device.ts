@@ -125,17 +125,19 @@ module.exports = class TadoHomeDevice extends TadoApiDevice {
      * ------------------------------------------------------------------
      */
 
-    private async getCurrentGeofencingMode(): Promise<string> {
+    private async getCurrentGeofencingMode(): Promise<"auto" | "home" | "away"> {
         const state = await this.getCurrentHomeState();
         const isAutoAssistEnabled = this.isAutoAssistEnabled();
+
+        const statePresence = state.presence.toLowerCase() as "auto" | "home" | "away";
 
         // this allows for non auto assist enabled users to rely on mobile device locations
         await this.setCapabilityValue(
             "tado_is_anyone_home",
-            isAutoAssistEnabled ? state.presence.toLowerCase() == "home" : await this.api.isAnyoneAtHome(this.id),
+            isAutoAssistEnabled ? statePresence == "home" : await this.api.isAnyoneAtHome(this.id),
         );
 
-        return state.presenceLocked || !isAutoAssistEnabled ? state.presence.toLowerCase() : "auto";
+        return state.presenceLocked || !isAutoAssistEnabled ? statePresence : "auto";
     }
 
     public async syncGeofencingMode(): Promise<void> {
