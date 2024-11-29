@@ -28,5 +28,8 @@
   },
   "1.2.1": {
     "en": "Update tado client to latest version."
+  },
+  "1.2.2": {
+    "en": "Added flow action to set geopresence mode and flow trigger on changed geopresence mode."
   }
 }
