@@ -31,5 +31,8 @@
   },
   "1.2.2": {
     "en": "Added flow action to set geopresence mode and flow trigger on changed geopresence mode."
+  },
+  "1.2.3": {
+    "en": "Fix error when energyIQ was disabled for home."
   }
 }
