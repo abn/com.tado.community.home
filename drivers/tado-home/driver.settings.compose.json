@@ -54,6 +54,12 @@
         "type": "label",
         "label": { "en": "Auto Assist Enabled" },
         "value": "Yes"
+      },
+      {
+        "id": "energy_iq_enabled",
+        "type": "label",
+        "label": { "en": "Energy IQ Enabled" },
+        "value": "Yes"
       }
     ]
   }

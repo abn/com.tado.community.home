@@ -197,7 +197,15 @@ module.exports = class TadoHomeDevice extends TadoApiDevice {
         return this.getSetting("auto_assist_enabled") == "Yes";
     }
 
+    private isEnergyIQEnabled(): boolean {
+        return this.getSetting("energy_iq_enabled") == "Yes";
+    }
+
     private async configureEnergyIQCapabilities(isEnabled: boolean): Promise<void> {
+        await this.setSettings({
+            energy_iq_enabled: isEnabled ? "Yes" : "No",
+        });
+
         const intervalKeys = ["GAS_METER_READING", "ENERGY_CONSUMPTION"];
 
         // disable intervals
@@ -239,8 +247,6 @@ module.exports = class TadoHomeDevice extends TadoApiDevice {
         await this.setSettings({
             auto_assist_enabled: isEnabled ? "Yes" : "No",
         });
-
-        await this.configureEnergyIQCapabilities(isEnabled);
         await this.setCapabilityValue("tado_geofencing_mode", await this.getCurrentGeofencingMode());
     }
 
@@ -250,6 +256,7 @@ module.exports = class TadoHomeDevice extends TadoApiDevice {
         await this.setCapabilityValue("tado_room_count", info.zonesCount);
 
         await this.configureAutoAssist(info.skills.includes("AUTO_ASSIST"));
+        await this.configureEnergyIQCapabilities(info.isEnergyIqEligible ?? false);
     }
 
     /**
@@ -306,24 +313,30 @@ module.exports = class TadoHomeDevice extends TadoApiDevice {
      */
 
     public async syncEnergyConsumption(): Promise<void> {
-        const today = new Date();
+        if (!this.isEnergyIQEnabled()) return;
 
-        const consumptionDetails: EnergyIQConsumptionDetails = await this.api.getEnergyIQConsumptionDetails(
-            this.id,
-            today.getMonth() + 1,
-            today.getFullYear(),
-        );
+        try {
+            const today = new Date();
 
-        await this.setCapabilityValue(
-            "meter_power.daily_consumption_average",
-            consumptionDetails.summary.averageDailyConsumption,
-        );
-        await this.setCapabilityValue("meter_power.monthly_consumption", consumptionDetails.summary.consumption);
+            const consumptionDetails: EnergyIQConsumptionDetails = await this.api.getEnergyIQConsumptionDetails(
+                this.id,
+                today.getMonth() + 1,
+                today.getFullYear(),
+            );
 
-        const perDateConsumption =
-            consumptionDetails.graphConsumption.monthlyAggregation.requestedMonth.consumptionPerDate;
-        const dailyConsumption = perDateConsumption[perDateConsumption.length - 1]?.consumption ?? 0;
-        await this.setCapabilityValue("meter_power.daily_consumption", dailyConsumption);
+            await this.setCapabilityValue(
+                "meter_power.daily_consumption_average",
+                consumptionDetails.summary.averageDailyConsumption,
+            );
+            await this.setCapabilityValue("meter_power.monthly_consumption", consumptionDetails.summary.consumption);
+
+            const perDateConsumption =
+                consumptionDetails.graphConsumption.monthlyAggregation.requestedMonth.consumptionPerDate;
+            const dailyConsumption = perDateConsumption[perDateConsumption.length - 1]?.consumption ?? 0;
+            await this.setCapabilityValue("meter_power.daily_consumption", dailyConsumption);
+        } catch (e) {
+            this.log(`Failed to sync energy consumption: ${e}`);
+        }
     }
 
     /**
