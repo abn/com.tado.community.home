@@ -28,7 +28,7 @@
   "dependencies": {
     "homey-interval-manager": "^1.1.2",
     "homey-oauth2app": "^3.6.0",
-    "node-tado-client": "^0.20.0",
+    "node-tado-client": "^0.21.0",
     "source-map-support": "^0.5.21"
   }
 }
