@@ -28,6 +28,7 @@
   "actions": [
     {
       "id": "tado_room_resume_schedule",
+      "highlight": true,
       "title": {
         "en": "Resume room schedule"
       },
@@ -37,6 +38,7 @@
     },
     {
       "id": "tado_room_boost_heating",
+      "highlight": true,
       "title": {
         "en": "Boost room heating"
       },
@@ -64,6 +66,7 @@
   "conditions": [
     {
       "id": "tado_room_smart_schedule_status",
+      "highlight": true,
       "title": {
         "en": "Smart schedule is !{{on|off}}"
       },
