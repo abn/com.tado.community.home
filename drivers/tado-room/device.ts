@@ -1,7 +1,7 @@
 import { TadoApiDevice } from "../../lib/tado-api-device";
 
 import type { IntervalConfigurationCollection } from "homey-interval-manager";
-import type { Termination, ZoneType } from "node-tado-client";
+import type { Termination, XRoom, ZoneState } from "node-tado-client";
 
 module.exports = class TadoRoomDevice extends TadoApiDevice {
     private get home_id(): number {
@@ -10,10 +10,6 @@ module.exports = class TadoRoomDevice extends TadoApiDevice {
 
     private get id(): number {
         return this.getData().id;
-    }
-
-    private get type(): ZoneType {
-        return this.getData().type;
     }
 
     protected override get intervalConfigs(): IntervalConfigurationCollection<TadoRoomDevice> {
@@ -25,6 +21,7 @@ module.exports = class TadoRoomDevice extends TadoApiDevice {
             EARLY_START: {
                 functionName: "syncEarlyStart",
                 settingName: "early_start_polling_interval",
+                disableAutoStart: true,
             },
         };
     }
@@ -38,12 +35,13 @@ module.exports = class TadoRoomDevice extends TadoApiDevice {
         const boostHeatingAction = this.homey.flow.getActionCard("tado_room_boost_heating");
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         boostHeatingAction.registerRunListener(async (args: { duration?: number }, state: unknown) => {
-            await this.api.setBoostHeatingOverlay(this.home_id, [this.id], args.duration ? args.duration / 1000 : 1800);
+            await this.api.boostHeating(this.home_id, [this.id], args.duration ? args.duration / 1000 : 1800);
         });
 
         const earlyStartSetAction = this.homey.flow.getActionCard("tado_room_early_start_set");
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         earlyStartSetAction.registerRunListener(async (args: { enabled: boolean }, state: unknown) => {
+            if (this.isGenerationX) throw new Error("Tado X does not support early start");
             await this.setEarlyStart(args.enabled);
         });
     }
@@ -61,6 +59,7 @@ module.exports = class TadoRoomDevice extends TadoApiDevice {
 
         const earlyStartStatusCondition = this.homey.flow.getConditionCard("tado_room_early_start_status");
         earlyStartStatusCondition.registerRunListener(async () => {
+            if (this.isGenerationX) return false;
             return this.getCapabilityValue("onoff.early_start");
         });
     }
@@ -72,10 +71,13 @@ module.exports = class TadoRoomDevice extends TadoApiDevice {
 
         this.registerCapabilityListener("onoff", this.setOnOff.bind(this));
 
-        this.registerCapabilityListener("onoff.early_start", this.setEarlyStart.bind(this));
+        if (this.hasCapability("onoff.early_start")) {
+            this.registerCapabilityListener("onoff.early_start", this.setEarlyStart.bind(this));
+            await this.intervalManager.start("EARLY_START");
+        }
 
         this.registerCapabilityListener("tado_boost_heating", async (value) => {
-            if (value) await this.api.setBoostHeatingOverlay(this.home_id, [this.id], 1800);
+            if (value) await this.api.boostHeating(this.home_id, [this.id], 1800);
         });
 
         this.registerCapabilityListener("tado_resume_schedule", this.resumeSchedule.bind(this));
@@ -101,8 +103,30 @@ module.exports = class TadoRoomDevice extends TadoApiDevice {
             "onoff.smart_schedule",
             // Available from v1.1.4
             "alarm_open_window_detected",
-            "onoff.early_start",
         );
+
+        // Configured since v1.2.4
+        await this.migrateGeneration(this.home_id);
+
+        if (this.isGenerationX && this.hasCapability("onoff.early_start")) {
+            // Generation X does not support early start yet
+            await this.intervalManager.stop("EARLY_START").catch(this.error);
+            await this.migrateRemoveCapabilities("onoff.early_start");
+        } else {
+            // Available from v1.1.4
+            await this.migrateAddCapabilities("onoff.early_start");
+        }
+
+        // this should always happen at the end to avoid any munging and ensure generation is set
+        if (this.isGenerationX) {
+            const target_temperature_options = this.getCapabilityOptions("target_temperature");
+
+            if (target_temperature_options.max !== 30) {
+                // generation x rooms now allow you to set temperatures to 30
+                target_temperature_options.max = 30;
+                await this.setCapabilityOptions("target_temperature", target_temperature_options);
+            }
+        }
     }
 
     /**
@@ -111,7 +135,7 @@ module.exports = class TadoRoomDevice extends TadoApiDevice {
      * ------------------------------------------------------------------
      */
     protected async resumeSchedule(): Promise<void> {
-        await this.api.clearZoneOverlays(this.home_id, [this.id]);
+        await this.api.resumeScheduleHomey(this.home_id, this.id);
         await this.setCapabilityValue("onoff.smart_schedule", true);
     }
 
@@ -124,7 +148,9 @@ module.exports = class TadoRoomDevice extends TadoApiDevice {
     }
 
     protected async setEarlyStart(value: boolean): Promise<void> {
-        await this.api.setZoneEarlyStart(this.home_id, this.id, value).catch(this.error);
+        if (!this.isGenerationX) {
+            await this.api_v2.setZoneEarlyStart(this.home_id, this.id, value).catch(this.error);
+        }
     }
 
     protected async setRoomTargetTemperature(
@@ -133,24 +159,8 @@ module.exports = class TadoRoomDevice extends TadoApiDevice {
     ): Promise<void> {
         const isOff = value < 5.0;
         const previousValue = this.getCapabilityValue("target_temperature");
-
         await this.api
-            .setZoneOverlays(
-                this.home_id,
-                [
-                    {
-                        zone_id: this.id,
-                        power: isOff ? "OFF" : "ON",
-                        temperature: isOff
-                            ? null
-                            : {
-                                  // the api only allows a supported range of 5–25°C
-                                  celsius: Math.max(Math.min(value, 25.0), 5.0),
-                              },
-                    },
-                ],
-                termination,
-            )
+            .setRoomTemperature(this.home_id, this.id, termination, value)
             .then(async () => {
                 // we reset value to ensure turning off does not change the value
                 await this.setCapabilityValue("target_temperature", isOff ? previousValue : Math.max(0.0, value));
@@ -168,13 +178,43 @@ module.exports = class TadoRoomDevice extends TadoApiDevice {
      * ------------------------------------------------------------------
      */
     public async syncRoomState(): Promise<void> {
-        const state = await this.api.getZoneState(this.home_id, this.id);
+        let state: XRoom | ZoneState;
+        let tado_heating_power: number | undefined = undefined;
+        let measure_temperature: number;
+        let target_temperature: number | undefined;
+        let tado_presence_mode;
+        let isSmartScheduleOn;
+
+        if (this.isGenerationX) {
+            state = await this.api_x.getRoomState(this.home_id, this.id);
+            measure_temperature = state.sensorDataPoints.insideTemperature.value;
+            // tado_presence_mode = state;
+            isSmartScheduleOn = state.manualControlTermination === null;
+            target_temperature = state.setting.temperature?.value;
+            tado_heating_power = state.heatingPower?.percentage;
+
+            // the hops api does not provide geo location data in initial response
+            const home_state = await this.api_x.getState(this.home_id);
+            tado_presence_mode = home_state.presence.toLowerCase();
+        } else {
+            state = await this.api_v2.getZoneState(this.home_id, this.id);
+            measure_temperature = state.sensorDataPoints.insideTemperature.celsius;
+            tado_presence_mode = state.tadoMode.toLowerCase();
+            isSmartScheduleOn = state.overlayType === null;
+            target_temperature = state.setting.temperature?.celsius;
+
+            if ("heatingPower" in state.activityDataPoints) {
+                tado_heating_power =
+                    state.activityDataPoints.heatingPower?.type == "PERCENTAGE"
+                        ? state.activityDataPoints.heatingPower.percentage
+                        : 0.0;
+            }
+        }
+
         // await this.setCapabilityValue("alarm_connectivity", state.link.state == "ONLINE");
         await this.setCapabilityValue("measure_humidity", state.sensorDataPoints.humidity.percentage);
-        await this.setCapabilityValue("measure_temperature", state.sensorDataPoints.insideTemperature.celsius);
-        await this.setCapabilityValue("tado_presence_mode", state.tadoMode.toLowerCase());
-
-        const isSmartScheduleOn = state.overlayType === null;
+        await this.setCapabilityValue("measure_temperature", measure_temperature);
+        await this.setCapabilityValue("tado_presence_mode", tado_presence_mode);
         await this.setCapabilityValue("onoff.smart_schedule", isSmartScheduleOn);
 
         const isWindowOpen = state.openWindow !== null;
@@ -183,23 +223,20 @@ module.exports = class TadoRoomDevice extends TadoApiDevice {
         const isTurnedOn = state.setting.power == "ON";
         await this.setCapabilityValue("onoff", isTurnedOn);
 
-        if (state.setting.temperature?.celsius || isTurnedOn)
-            await this.setCapabilityValue("target_temperature", state.setting.temperature?.celsius ?? 5.0);
+        if (target_temperature || isTurnedOn)
+            await this.setCapabilityValue("target_temperature", target_temperature ?? 5.0);
 
-        if ("heatingPower" in state.activityDataPoints) {
-            await this.setCapabilityValue(
-                "tado_heating_power",
-                state.activityDataPoints.heatingPower?.type == "PERCENTAGE"
-                    ? state.activityDataPoints.heatingPower.percentage
-                    : 0.0,
-            );
+        if (tado_heating_power !== undefined) {
+            await this.setCapabilityValue("tado_heating_power", tado_heating_power);
         }
     }
 
     public async syncEarlyStart(): Promise<void> {
+        if (this.isGenerationX) return;
+
         await this.setCapabilityValue(
             "onoff.early_start",
-            await this.api.isZoneEarlyStartEnabled(this.home_id, this.id),
+            await this.api_v2.isZoneEarlyStartEnabled(this.home_id, this.id),
         );
     }
 

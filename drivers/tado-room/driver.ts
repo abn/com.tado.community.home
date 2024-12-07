@@ -1,5 +1,6 @@
 import { OAuth2Driver } from "homey-oauth2app";
 import { TadoOAuth2Client } from "../../lib/tado-oauth2-client";
+import { HomeGeneration } from "node-tado-client";
 
 module.exports = class TadoRoomDriver extends OAuth2Driver<TadoOAuth2Client> {
     /**
@@ -10,22 +11,27 @@ module.exports = class TadoRoomDriver extends OAuth2Driver<TadoOAuth2Client> {
         oAuth2Client,
     }: {
         oAuth2Client: TadoOAuth2Client;
-    }): Promise<{ name: string; data: { id: number; homeId: number } }[]> {
+    }): Promise<{ name: string; data: { id: number; homeId: number; generation: HomeGeneration } }[]> {
         this.log("Listing room devices available to be added");
         const { homes } = await oAuth2Client.tado.getMe();
         const devices = [];
 
         for (const home of homes) {
-            const zones = await oAuth2Client.tado.getZones(home.id);
+            const home_info = await oAuth2Client.tado.getHome(home.id);
+
+            const rooms =
+                home_info.generation === "PRE_LINE_X"
+                    ? await oAuth2Client.tado.getZones(home.id)
+                    : await oAuth2Client.tadox.getRooms(home.id);
 
             devices.push(
-                ...zones.map((zone) => {
+                ...rooms.map((room) => {
                     return {
-                        name: `${home.name} / ${zone.name}`,
+                        name: `${home.name} / ${room.name}`,
                         data: {
-                            id: zone.id,
+                            id: room.id,
                             homeId: home.id,
-                            type: zone.type,
+                            generation: home_info.generation,
                         },
                     };
                 }),

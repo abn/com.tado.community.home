@@ -1,5 +1,5 @@
 import { OAuth2Client, OAuth2Token } from "homey-oauth2app";
-import { TadoApiClient } from "./tado-api-client";
+import { TadoApiClient, TadoXApiClient } from "./tado-api-client";
 
 type AllowedMethods = "get" | "post" | "put" | "delete";
 type PayloadMethods = "post" | "put";
@@ -16,6 +16,7 @@ export class TadoOAuth2Client extends OAuth2Client<OAuth2Token> {
     static override CLIENT_SECRET = "4HJGRffVR8xb3XdEUQpjgZ1VplJi6Xgw";
 
     public readonly tado: TadoApiClient = new TadoApiClient();
+    public readonly tadox: TadoXApiClient = new TadoXApiClient();
 
     /**
      * Monkey patch method to replace `TadoApiClient.apiCall()` in order to use the authenticated session from `OAuth2Client`.
@@ -31,9 +32,25 @@ export class TadoOAuth2Client extends OAuth2Client<OAuth2Token> {
         });
     }
 
+    /**
+     * Monkey patch method to replace `TadoXApiClient.apiCall()` in order to use the authenticated session from `OAuth2Client`.
+     */
+    async _apiCallX<T, M extends AllowedMethods>(
+        url: string,
+        method: keyof this & AllowedMethods = "get",
+        data?: M extends PayloadMethods ? unknown : never,
+    ): Promise<T> {
+        return this[method.toLowerCase() as AllowedMethods]({
+            path: `https://hops.tado.com${url}`,
+            json: data,
+        });
+    }
+
     async onInit(): Promise<void> {
-        // monkey patch tado instance, this only works with `onInit`
+        // monkey patch tado instances, this only works with `onInit`
         this.tado.apiCall = this._apiCall.bind(this);
+        this.tadox.apiCall = this._apiCall.bind(this);
+        // this.tadox.apiCallX = this._apiCallX.bind(this);
     }
 
     /**

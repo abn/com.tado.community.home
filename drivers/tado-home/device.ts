@@ -52,7 +52,7 @@ module.exports = class TadoHomeDevice extends TadoApiDevice {
         const boostHeatingAction = this.homey.flow.getActionCard("tado_home_boost_heating");
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         boostHeatingAction.registerRunListener(async (args: { duration?: number }, state: unknown) => {
-            await this.boostHeating({ durationSeconds: args.duration ? args.duration / 1000 : 1800 });
+            await this.boostHeating({ duration_seconds: args.duration ? args.duration / 1000 : 1800 });
         });
 
         const setGeofencingModeAction = this.homey.flow.getActionCard("tado_home_set_geofencing_mode");
@@ -92,7 +92,7 @@ module.exports = class TadoHomeDevice extends TadoApiDevice {
         });
 
         this.registerCapabilityListener("tado_boost_heating", async (value) => {
-            if (value) await this.boostHeating({ durationSeconds: 1800 });
+            if (value) await this.boostHeating({ duration_seconds: 1800 });
         });
 
         this.registerCapabilityListener("tado_resume_schedule", async (value) => {
@@ -115,6 +115,9 @@ module.exports = class TadoHomeDevice extends TadoApiDevice {
             // Available from v1.0.4
             "tado_boost_heating",
         );
+
+        // Configured since v1.2.4
+        await this.migrateGeneration(this.id);
     }
 
     /**
@@ -125,7 +128,7 @@ module.exports = class TadoHomeDevice extends TadoApiDevice {
      * @return The formatted date string.
      */
     private formatFlowArgDate(date?: string | undefined): string {
-        if (!date) return this.api.dateString();
+        if (!date) return this.dateString();
 
         const datePattern = /^\d{2}-\d{2}-\d{4}$/;
         if (!datePattern.test(date.trim())) {
@@ -134,7 +137,7 @@ module.exports = class TadoHomeDevice extends TadoApiDevice {
 
         const [day, month, year] = date.trim().split("-").map(Number);
 
-        return this.api.dateString(new Date(year, month - 1, day));
+        return this.dateString(new Date(year, month - 1, day));
     }
 
     private async setTadoPresenceMode(value: TadoMode): Promise<void> {
@@ -176,9 +179,21 @@ module.exports = class TadoHomeDevice extends TadoApiDevice {
     private async setGeofencingMode(value: StatePresence): Promise<void> {
         const state = value.toUpperCase() as StatePresence;
 
-        if (state == "AUTO" && !this.isAutoAssistEnabled()) {
-            throw new Error("Auto Assist is not enabled");
+        if (state === "AUTO") {
+            if (!this.isAutoAssistEnabled()) {
+                this.log("Auto Assist is not enabled, cannot set geofencing mode to auto");
+                throw new Error("Auto Assist is not enabled");
+            }
+
+            const devices = await this.api.getMobileDevices(this.id);
+            const geo_tracking_available = devices.some((device) => device.settings.geoTrackingEnabled);
+
+            if (!geo_tracking_available) {
+                this.log("No mobile devices with geo tracking enabled, cannot set geofencing mode to auto");
+                throw new Error("No mobile devices with geo tracking enabled");
+            }
         }
+
         await this.api.setPresence(this.id, state);
 
         // Update geofencing mode after a short delay
@@ -254,7 +269,6 @@ module.exports = class TadoHomeDevice extends TadoApiDevice {
         const info = await this.api.getHome(this.id);
 
         await this.setCapabilityValue("tado_room_count", info.zonesCount);
-
         await this.configureAutoAssist(info.skills.includes("AUTO_ASSIST"));
         await this.configureEnergyIQCapabilities(info.isEnergyIqEligible ?? false);
     }
@@ -265,25 +279,22 @@ module.exports = class TadoHomeDevice extends TadoApiDevice {
      * ------------------------------------------------------------------
      */
 
-    private async getActiveZoneIds(): Promise<number[]> {
-        return this.api.getZones(this.id).then((zones) => zones.map((zone) => zone.id));
-    }
-
-    public async resumeSchedule(...zoneIds: number[]): Promise<void> {
-        await this.api.clearZoneOverlays(this.id, zoneIds.length > 0 ? zoneIds : await this.getActiveZoneIds());
+    public async resumeSchedule(): Promise<void> {
+        await this.api.resumeScheduleHomey(this.id);
     }
 
     public async boostHeating({
-        zoneIds,
-        durationSeconds,
+        room_ids,
+        duration_seconds,
     }: {
-        zoneIds?: number[];
-        durationSeconds?: number;
+        room_ids?: number[];
+        duration_seconds?: number;
     }): Promise<void> {
-        await this.api.setBoostHeatingOverlay(
+        // we do not use perform action for X devices as this does not support duration
+        await this.api.boostHeating(
             this.id,
-            zoneIds && zoneIds.length > 0 ? zoneIds : await this.getActiveZoneIds(),
-            durationSeconds ?? 1800,
+            room_ids && room_ids.length > 0 ? room_ids : await this.api.getActiveRoomIds(this.id),
+            duration_seconds ?? 1800,
         );
     }
 

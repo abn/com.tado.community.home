@@ -37,6 +37,7 @@
     "triggers": [
       {
         "id": "tado_presence_mode_changed",
+        "highlight": true,
         "title": {
           "en": "The home presence mode changed"
         },
@@ -243,6 +244,7 @@
       },
       {
         "id": "tado_home_resume_schedule",
+        "highlight": true,
         "title": {
           "en": "Resume home schedule"
         },
@@ -276,6 +278,7 @@
       },
       {
         "id": "tado_home_set_geofencing_mode",
+        "highlight": true,
         "title": {
           "en": "Set geofencing mode to ..."
         },
@@ -324,6 +327,7 @@
       },
       {
         "id": "tado_room_resume_schedule",
+        "highlight": true,
         "title": {
           "en": "Resume room schedule"
         },
@@ -340,6 +344,7 @@
       },
       {
         "id": "tado_room_boost_heating",
+        "highlight": true,
         "title": {
           "en": "Boost room heating"
         },
@@ -383,6 +388,7 @@
     "conditions": [
       {
         "id": "tado_room_smart_schedule_status",
+        "highlight": true,
         "title": {
           "en": "Smart schedule is !{{on|off}}"
         },
