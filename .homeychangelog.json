@@ -34,5 +34,8 @@
   },
   "1.2.3": {
     "en": "Fix error when energyIQ was disabled for home."
+  },
+  "2.0.0": {
+    "en": "Added support for Tado X generation homes."
   }
 }
