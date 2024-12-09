@@ -32,25 +32,10 @@ export class TadoOAuth2Client extends OAuth2Client<OAuth2Token> {
         });
     }
 
-    /**
-     * Monkey patch method to replace `TadoXApiClient.apiCall()` in order to use the authenticated session from `OAuth2Client`.
-     */
-    async _apiCallX<T, M extends AllowedMethods>(
-        url: string,
-        method: keyof this & AllowedMethods = "get",
-        data?: M extends PayloadMethods ? unknown : never,
-    ): Promise<T> {
-        return this[method.toLowerCase() as AllowedMethods]({
-            path: `https://hops.tado.com${url}`,
-            json: data,
-        });
-    }
-
     async onInit(): Promise<void> {
         // monkey patch tado instances, this only works with `onInit`
         this.tado.apiCall = this._apiCall.bind(this);
         this.tadox.apiCall = this._apiCall.bind(this);
-        // this.tadox.apiCallX = this._apiCallX.bind(this);
     }
 
     /**
