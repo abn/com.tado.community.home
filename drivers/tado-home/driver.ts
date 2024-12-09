@@ -1,8 +1,8 @@
-import { OAuth2Driver } from "homey-oauth2app";
 import { TadoOAuth2Client } from "../../lib/tado-oauth2-client";
 import { HomeGeneration } from "node-tado-client";
+import { TadoOAuth2Driver } from "../../lib/tado-oauth2-driver";
 
-module.exports = class TadoHomeDriver extends OAuth2Driver<TadoOAuth2Client> {
+module.exports = class TadoHomeDriver extends TadoOAuth2Driver {
     /**
      * onPairListDevices is called when a user is adding a device and the 'list_devices' view is called.
      * This should return an array with the data of devices that are available for pairing.
