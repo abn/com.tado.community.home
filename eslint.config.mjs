@@ -21,6 +21,14 @@ export default [
                     "ts-ignore": "allow-with-description",
                 },
             ],
+            "@typescript-eslint/no-unused-vars": [
+                "error",
+                {
+                    argsIgnorePattern: "^_",
+                    varsIgnorePattern: "^_",
+                    caughtErrorsIgnorePattern: "^_",
+                },
+            ],
         },
     },
 ];
