@@ -47,10 +47,7 @@ export class TadoOAuth2Client extends OAuth2Client<OAuth2Token> {
 
         return {
             id: me.id,
-            title: JSON.stringify({
-                username: me.username,
-                email: me.email,
-            }),
+            title: me.email,
         };
     }
 }
