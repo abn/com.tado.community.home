@@ -14,6 +14,8 @@ declare module "homey-oauth2app" {
 
         getFirstSavedOAuth2Client(): OAuth2Client;
 
+        getSavedOAuth2Sessions(): { [key: string]: { configId: string; title: string; token?: object } };
+
         homeyLog: Log;
     }
 
