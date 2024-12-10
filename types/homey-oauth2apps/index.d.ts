@@ -10,6 +10,8 @@ declare module "homey-oauth2app" {
         static OAUTH2_DEBUG: boolean;
         static OAUTH2_MULTI_SESSION: boolean;
 
+        deleteOAuth2Client({ sessionId, configId = "default" } = { sessionId: string, configId: string });
+
         onOAuth2Init(): Promise<void>;
 
         getFirstSavedOAuth2Client(): OAuth2Client;
@@ -49,6 +51,8 @@ declare module "homey-oauth2app" {
 
         save(): void;
 
+        destroy(): void;
+
         async onBuildRequest(args: {
             method: string;
             path: string;
@@ -66,6 +70,10 @@ declare module "homey-oauth2app" {
         }>;
 
         async onGetOAuth2SessionInformation(): Promise<{ id: *; title: string | null }>;
+
+        async onInit(): Promise<void>;
+
+        async onUninit(): Promise<void>;
     }
 
     export class OAuth2Device<T extends OAuth2Client> extends Homey.Device {
