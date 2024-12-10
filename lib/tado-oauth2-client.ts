@@ -32,7 +32,7 @@ export class TadoOAuth2Client extends OAuth2Client<OAuth2Token> {
         });
     }
 
-    async onInit(): Promise<void> {
+    override async onInit(): Promise<void> {
         // monkey patch tado instances, this only works with `onInit`
         this.tado.apiCall = this._apiCall.bind(this);
         this.tadox.apiCall = this._apiCall.bind(this);
