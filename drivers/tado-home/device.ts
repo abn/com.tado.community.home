@@ -1,7 +1,7 @@
 import { TadoApiDevice } from "../../lib/tado-api-device";
 
 import type { IntervalConfigurationCollection } from "homey-interval-manager";
-import type { EnergyIQConsumptionDetails, State, StatePresence, TadoMode } from "node-tado-client";
+import type { State, StatePresence, TadoMode } from "node-tado-client";
 
 module.exports = class TadoHomeDevice extends TadoApiDevice {
     private get id(): number {
@@ -141,7 +141,7 @@ module.exports = class TadoHomeDevice extends TadoApiDevice {
     }
 
     private async setTadoPresenceMode(value: TadoMode): Promise<void> {
-        await this.setCapabilityValue("tado_presence_mode", value.toLowerCase());
+        await this.setCapabilityValue("tado_presence_mode", value.toLowerCase()).catch(this.error);
     }
 
     private async getCurrentHomeState(): Promise<State> {
@@ -172,8 +172,11 @@ module.exports = class TadoHomeDevice extends TadoApiDevice {
     }
 
     public async syncGeofencingMode(): Promise<void> {
-        const mode = await this.getCurrentGeofencingMode();
-        await this.setCapabilityValue("tado_geofencing_mode", mode);
+        await this.getCurrentGeofencingMode()
+            .then(async (mode) => {
+                await this.setCapabilityValue("tado_geofencing_mode", mode).catch(this.error);
+            })
+            .catch(this.error);
     }
 
     private async setGeofencingMode(value: StatePresence): Promise<void> {
@@ -198,7 +201,7 @@ module.exports = class TadoHomeDevice extends TadoApiDevice {
 
         // Update geofencing mode after a short delay
         this.homey.setTimeout(async () => {
-            await this.syncGeofencingMode();
+            await this.syncGeofencingMode().catch(this.error);
         }, 1000);
     }
 
@@ -266,11 +269,16 @@ module.exports = class TadoHomeDevice extends TadoApiDevice {
     }
 
     public async syncHomeInfo(): Promise<void> {
-        const info = await this.api.getHome(this.id);
-
-        await this.setCapabilityValue("tado_room_count", info.zonesCount);
-        await this.configureAutoAssist(info.skills.includes("AUTO_ASSIST"));
-        await this.configureEnergyIQCapabilities(info.isEnergyIqEligible ?? false);
+        try {
+            const info = await this.api.getHome(this.id);
+            await Promise.all([
+                this.setCapabilityValue("tado_room_count", info.zonesCount),
+                this.configureAutoAssist(info.skills.includes("AUTO_ASSIST")),
+                this.configureEnergyIQCapabilities(info.isEnergyIqEligible ?? false),
+            ]).catch(this.error);
+        } catch (error) {
+            this.log("Failed to sync home info", error);
+        }
     }
 
     /**
@@ -290,7 +298,6 @@ module.exports = class TadoHomeDevice extends TadoApiDevice {
         room_ids?: number[];
         duration_seconds?: number;
     }): Promise<void> {
-        // we do not use perform action for X devices as this does not support duration
         await this.api.boostHeating(
             this.id,
             room_ids && room_ids.length > 0 ? room_ids : await this.api.getActiveRoomIds(this.id),
@@ -310,7 +317,7 @@ module.exports = class TadoHomeDevice extends TadoApiDevice {
         try {
             const { readings } = await this.api.getEnergyIQMeterReadings(this.id);
             const reading = readings.length > 0 ? readings[0].reading : 0;
-            await this.setCapabilityValue("meter_gas", reading);
+            await this.setCapabilityValue("meter_gas", reading).catch(this.error);
         } catch (error) {
             this.log("Unable to retrieve meter readings", error);
             return;
@@ -329,24 +336,25 @@ module.exports = class TadoHomeDevice extends TadoApiDevice {
         try {
             const today = new Date();
 
-            const consumptionDetails: EnergyIQConsumptionDetails = await this.api.getEnergyIQConsumptionDetails(
+            const consumptionDetails = await this.api.getEnergyIQConsumptionDetails(
                 this.id,
                 today.getMonth() + 1,
                 today.getFullYear(),
             );
-
-            await this.setCapabilityValue(
-                "meter_power.daily_consumption_average",
-                consumptionDetails.summary.averageDailyConsumption,
-            );
-            await this.setCapabilityValue("meter_power.monthly_consumption", consumptionDetails.summary.consumption);
-
             const perDateConsumption =
                 consumptionDetails.graphConsumption.monthlyAggregation.requestedMonth.consumptionPerDate;
             const dailyConsumption = perDateConsumption[perDateConsumption.length - 1]?.consumption ?? 0;
-            await this.setCapabilityValue("meter_power.daily_consumption", dailyConsumption);
-        } catch (e) {
-            this.log(`Failed to sync energy consumption: ${e}`);
+
+            await Promise.all([
+                this.setCapabilityValue(
+                    "meter_power.daily_consumption_average",
+                    consumptionDetails.summary.averageDailyConsumption,
+                ),
+                this.setCapabilityValue("meter_power.monthly_consumption", consumptionDetails.summary.consumption),
+                this.setCapabilityValue("meter_power.daily_consumption", dailyConsumption),
+            ]).catch(this.error);
+        } catch (error) {
+            this.log("Failed to sync energy consumption", error);
         }
     }
 
@@ -357,9 +365,15 @@ module.exports = class TadoHomeDevice extends TadoApiDevice {
      */
 
     public async syncWeather(): Promise<void> {
-        const weather = await this.api.getWeather(this.id);
-        await this.setCapabilityValue("tado_weather_state", weather.weatherState.value);
-        await this.setCapabilityValue("measure_temperature.outside", weather.outsideTemperature.celsius);
-        await this.setCapabilityValue("tado_solar_intensity", weather.solarIntensity.percentage);
+        try {
+            const weather = await this.api.getWeather(this.id);
+            await Promise.all([
+                this.setCapabilityValue("tado_weather_state", weather.weatherState.value),
+                this.setCapabilityValue("measure_temperature.outside", weather.outsideTemperature.celsius),
+                this.setCapabilityValue("tado_solar_intensity", weather.solarIntensity.percentage),
+            ]).catch(this.error);
+        } catch (error) {
+            this.log("Failed to sync weather", error);
+        }
     }
 };

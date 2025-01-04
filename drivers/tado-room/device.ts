@@ -185,59 +185,67 @@ module.exports = class TadoRoomDevice extends TadoApiDevice {
         let tado_presence_mode;
         let isSmartScheduleOn;
 
-        if (this.isGenerationX) {
-            state = await this.api_x.getRoomState(this.home_id, this.id);
-            measure_temperature = state.sensorDataPoints.insideTemperature.value;
-            // tado_presence_mode = state;
-            isSmartScheduleOn = state.manualControlTermination === null;
-            target_temperature = state.setting.temperature?.value;
-            tado_heating_power = state.heatingPower?.percentage;
+        try {
+            if (this.isGenerationX) {
+                state = await this.api_x.getRoomState(this.home_id, this.id);
+                measure_temperature = state.sensorDataPoints.insideTemperature.value;
+                // tado_presence_mode = state;
+                isSmartScheduleOn = state.manualControlTermination === null;
+                target_temperature = state.setting.temperature?.value;
+                tado_heating_power = state.heatingPower?.percentage;
 
-            // the hops api does not provide geo location data in initial response
-            const home_state = await this.api_x.getState(this.home_id);
-            tado_presence_mode = home_state.presence.toLowerCase();
-        } else {
-            state = await this.api_v2.getZoneState(this.home_id, this.id);
-            measure_temperature = state.sensorDataPoints.insideTemperature.celsius;
-            tado_presence_mode = state.tadoMode.toLowerCase();
-            isSmartScheduleOn = state.overlayType === null;
-            target_temperature = state.setting.temperature?.celsius;
+                // the hops api does not provide geo location data in initial response
+                const home_state = await this.api_x.getState(this.home_id);
+                tado_presence_mode = home_state.presence.toLowerCase();
+            } else {
+                state = await this.api_v2.getZoneState(this.home_id, this.id);
+                measure_temperature = state.sensorDataPoints.insideTemperature.celsius;
+                tado_presence_mode = state.tadoMode.toLowerCase();
+                isSmartScheduleOn = state.overlayType === null;
+                target_temperature = state.setting.temperature?.celsius;
 
-            if ("heatingPower" in state.activityDataPoints) {
-                tado_heating_power =
-                    state.activityDataPoints.heatingPower?.type == "PERCENTAGE"
-                        ? state.activityDataPoints.heatingPower.percentage
-                        : 0.0;
+                if ("heatingPower" in state.activityDataPoints) {
+                    tado_heating_power =
+                        state.activityDataPoints.heatingPower?.type == "PERCENTAGE"
+                            ? state.activityDataPoints.heatingPower.percentage
+                            : 0.0;
+                }
             }
-        }
 
-        // await this.setCapabilityValue("alarm_connectivity", state.link.state == "ONLINE");
-        await this.setCapabilityValue("measure_humidity", state.sensorDataPoints.humidity.percentage);
-        await this.setCapabilityValue("measure_temperature", measure_temperature);
-        await this.setCapabilityValue("tado_presence_mode", tado_presence_mode);
-        await this.setCapabilityValue("onoff.smart_schedule", isSmartScheduleOn);
+            // await this.setCapabilityValue("alarm_connectivity", state.link.state == "ONLINE");
+            await this.setCapabilityValue("measure_humidity", state.sensorDataPoints.humidity.percentage);
+            await this.setCapabilityValue("measure_temperature", measure_temperature);
+            await this.setCapabilityValue("tado_presence_mode", tado_presence_mode);
+            await this.setCapabilityValue("onoff.smart_schedule", isSmartScheduleOn);
 
-        const isWindowOpen = state.openWindow !== null;
-        await this.setCapabilityValue("alarm_open_window_detected", isWindowOpen);
+            const isWindowOpen = state.openWindow !== null;
+            await this.setCapabilityValue("alarm_open_window_detected", isWindowOpen);
 
-        const isTurnedOn = state.setting.power == "ON";
-        await this.setCapabilityValue("onoff", isTurnedOn);
+            const isTurnedOn = state.setting.power == "ON";
+            await this.setCapabilityValue("onoff", isTurnedOn);
 
-        if (target_temperature || isTurnedOn)
-            await this.setCapabilityValue("target_temperature", target_temperature ?? 5.0);
+            if (target_temperature || isTurnedOn) {
+                await this.setCapabilityValue("target_temperature", target_temperature ?? 5.0);
+            }
 
-        if (tado_heating_power !== undefined) {
-            await this.setCapabilityValue("tado_heating_power", tado_heating_power);
+            if (tado_heating_power !== undefined) {
+                await this.setCapabilityValue("tado_heating_power", tado_heating_power);
+            }
+        } catch (error) {
+            this.log("Failed to sync room state");
+            this.error(error);
         }
     }
 
     public async syncEarlyStart(): Promise<void> {
         if (this.isGenerationX) return;
 
-        await this.setCapabilityValue(
-            "onoff.early_start",
-            await this.api_v2.isZoneEarlyStartEnabled(this.home_id, this.id),
-        );
+        await this.api_v2
+            .isZoneEarlyStartEnabled(this.home_id, this.id)
+            .then(async (enabled) => {
+                await this.setCapabilityValue("onoff.early_start", enabled).catch(this.error);
+            })
+            .catch(this.error);
     }
 
     /**
