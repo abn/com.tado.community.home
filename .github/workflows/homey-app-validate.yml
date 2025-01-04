@@ -12,6 +12,8 @@ on:
           - publish
           - verified
   push:
+    branches:
+      - main
   pull_request:
 
 jobs:
