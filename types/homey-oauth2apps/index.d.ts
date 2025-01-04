@@ -71,6 +71,8 @@ declare module "homey-oauth2app" {
 
         async onGetOAuth2SessionInformation(): Promise<{ id: *; title: string | null }>;
 
+        async onHandleRefreshTokenError({ response }: { response: fetch.Response }): Promise<never>;
+
         async onInit(): Promise<void>;
 
         async onUninit(): Promise<void>;

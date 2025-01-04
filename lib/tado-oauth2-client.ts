@@ -1,4 +1,4 @@
-import { OAuth2Client, OAuth2Token } from "homey-oauth2app";
+import { fetch, OAuth2Client, OAuth2Token } from "homey-oauth2app";
 import { TadoApiClient, TadoXApiClient } from "./tado-api-client";
 
 type AllowedMethods = "get" | "post" | "put" | "delete";
@@ -49,5 +49,12 @@ export class TadoOAuth2Client extends OAuth2Client<OAuth2Token> {
             id: me.id,
             title: me.email,
         };
+    }
+
+    override async onHandleRefreshTokenError({ response }: { response: fetch.Response }): Promise<never> {
+        // workaround missing event dispatch in homey-oauth2app, this is required to set device as unavailable
+        this.emit("expired");
+
+        return super.onHandleRefreshTokenError({ response });
     }
 }
