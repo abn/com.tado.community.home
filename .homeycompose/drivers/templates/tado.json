@@ -11,18 +11,6 @@
   },
   "pair": [
     {
-      "id": "list_sessions",
-      "template": "list_devices",
-      "navigation": {
-        "next": "login_credentials"
-      },
-      "options": {
-        "singular": true,
-        "subtitle": "Select the Tado account to use.",
-        "title": "Tado Account"
-      }
-    },
-    {
       "id": "login_credentials",
       "template": "login_credentials"
     },
