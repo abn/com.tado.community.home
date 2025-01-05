@@ -37,5 +37,8 @@
   },
   "2.0.0": {
     "en": "Added support for Tado X generation homes."
+  },
+  "2.1.0": {
+    "en": "Improve session naming and error handing. Disable devices when re-authentication is unavoidable."
   }
 }
