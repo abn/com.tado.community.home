@@ -271,10 +271,13 @@ module.exports = class TadoHomeDevice extends TadoApiDevice {
     public async syncHomeInfo(): Promise<void> {
         try {
             const info = await this.api.getHome(this.id);
+            const auto_assist_enabled = info.skills.includes("AUTO_ASSIST");
+            const eqi_enabled = auto_assist_enabled && (info.isEnergyIqEligible ?? false);
+
             await Promise.all([
                 this.setCapabilityValue("tado_room_count", info.zonesCount),
-                this.configureAutoAssist(info.skills.includes("AUTO_ASSIST")),
-                this.configureEnergyIQCapabilities(info.isEnergyIqEligible ?? false),
+                this.configureAutoAssist(auto_assist_enabled),
+                this.configureEnergyIQCapabilities(eqi_enabled),
             ]).catch(this.error);
         } catch (error) {
             this.log("Failed to sync home info", error);
