@@ -1,4 +1,4 @@
-import { fetch, OAuth2Client, OAuth2Token } from "homey-oauth2app";
+import { fetch, OAuth2Client, OAuth2Error, OAuth2Token } from "homey-oauth2app";
 import { TadoApiClient, TadoXApiClient } from "./tado-api-client";
 
 type AllowedMethods = "get" | "post" | "put" | "delete";
@@ -52,9 +52,27 @@ export class TadoOAuth2Client extends OAuth2Client<OAuth2Token> {
     }
 
     override async onHandleRefreshTokenError({ response }: { response: fetch.Response }): Promise<never> {
-        // workaround missing event dispatch in homey-oauth2app, this is required to set device as unavailable
-        this.emit("expired");
+        try {
+            await super.onHandleRefreshTokenError({ response });
+        } catch (error) {
+            // workaround missing event dispatch in homey-oauth2app, this is required to set device as unavailable
+            let refresh_token_expired = [400, 401, 403].includes(response.status);
 
-        return super.onHandleRefreshTokenError({ response });
+            if (!refresh_token_expired && error instanceof OAuth2Error) {
+                const error_message = error.toString();
+                const substrings = /invalid_grant|Invalid refresh token|Refresh token revoked|expired/;
+                refresh_token_expired = substrings.test(error_message);
+            }
+
+            if (refresh_token_expired) {
+                this.log("Refresh token has expired, please re-authenticate");
+                this.emit("expired");
+            }
+
+            throw error;
+        }
+
+        // this should never be hit
+        throw new OAuth2Error("Failed to refresh token");
     }
 }
