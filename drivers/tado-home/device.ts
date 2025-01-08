@@ -64,19 +64,23 @@ module.exports = class TadoHomeDevice extends TadoApiDevice {
 
                 if (args.duration != null) {
                     await this.homey.setTimeout(async () => {
-                        const currentGeofencingMode = await this.getCurrentGeofencingMode();
+                        try {
+                            const currentGeofencingMode = await this.getCurrentGeofencingMode();
 
-                        if (currentGeofencingMode === args.mode) {
-                            this.log(
-                                `[Action:set_geofencing_mode] Duration set has elapsed, resetting geofencing mode to ${previousGeofencingMode}`,
-                            );
-                            await this.setGeofencingMode(previousGeofencingMode.toUpperCase() as StatePresence).catch(
-                                this.error,
-                            );
-                        } else {
-                            this.log(
-                                "[Action:set_geofencing_mode] Duration set has elapsed but mode has changed elsewhere, skipping reset",
-                            );
+                            if (currentGeofencingMode === args.mode) {
+                                this.log(
+                                    `[Action:set_geofencing_mode] Duration set has elapsed, resetting geofencing mode to ${previousGeofencingMode}`,
+                                );
+                                await this.setGeofencingMode(
+                                    previousGeofencingMode.toUpperCase() as StatePresence,
+                                ).catch(this.error);
+                            } else {
+                                this.log(
+                                    "[Action:set_geofencing_mode] Duration set has elapsed but mode has changed elsewhere, skipping reset",
+                                );
+                            }
+                        } catch (error) {
+                            this.log("[Action:set_geofencing_mode] Failed to reset geofencing mode", error);
                         }
                     }, args.duration);
                 }
