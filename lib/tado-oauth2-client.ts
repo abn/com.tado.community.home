@@ -55,18 +55,34 @@ export class TadoOAuth2Client extends OAuth2Client<OAuth2Token> {
         try {
             await super.onHandleRefreshTokenError({ response });
         } catch (error) {
-            // workaround missing event dispatch in homey-oauth2app, this is required to set device as unavailable
-            let refresh_token_expired = [400, 401, 403].includes(response.status);
+            // re-process the error to determine if the refresh token has expired
+            // we unfortunately need to do this because the `homey-oauth2app` does not emit an event for this
+            // not does it store the parsed payload
+            let refresh_token_expired = false;
 
-            if (!refresh_token_expired && error instanceof OAuth2Error) {
-                const error_message = error.toString();
-                const substrings = /invalid_grant|Invalid refresh token|Refresh token revoked|expired/;
-                refresh_token_expired = substrings.test(error_message);
+            await response
+                .json()
+                .then((json: { error?: string }) => {
+                    refresh_token_expired = json.error === "invalid_grant";
+                })
+                .catch(() => {});
+
+            if (!refresh_token_expired) {
+                // we cannot parse the response as json, try fallback
+                refresh_token_expired = [400, 401].includes(response.status);
+
+                if (!refresh_token_expired && error instanceof OAuth2Error) {
+                    const error_message = error.toString();
+                    const substrings = /invalid_grant|invalid refresh token|refresh token revoked|expired/i;
+                    refresh_token_expired = substrings.test(error_message);
+                }
             }
 
             if (refresh_token_expired) {
                 this.log("Refresh token has expired, please re-authenticate");
                 this.emit("expired");
+            } else {
+                this.log(`Attempt to refresh token failed with status ${response.status}`);
             }
 
             throw error;
