@@ -135,7 +135,7 @@ export abstract class TadoApiDevice extends OAuth2Device<TadoOAuth2Client> {
         this.log("tado° API device uninitialized");
 
         // perform common actions
-        await this.intervalManager.stop();
+        if (this.intervalManager !== undefined) await this.intervalManager.stop();
 
         await this.stop();
     }
