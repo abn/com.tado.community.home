@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "scripts": {
     "compile": "tsc",
-    "lint": "eslint",
-    "lint:fix": "eslint --fix",
+    "lint": "eslint --fix",
+    "lint:check": "eslint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "prepare": "npm run format && npm run lint",
