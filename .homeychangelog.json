@@ -40,5 +40,8 @@
   },
   "2.1.0": {
     "en": "Improve session naming and error handing. Disable devices when re-authentication is unavoidable."
+  },
+  "2.2.0": {
+    "en": "Added support for multiple accounts, fixed issues with device flow card registration and improved error handling."
   }
 }
