@@ -1,5 +1,6 @@
 {
   "$extends": "tado",
+  "class": "thermostat",
   "name": {
     "en": "tado° Room"
   },

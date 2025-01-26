@@ -648,7 +648,7 @@
       ]
     },
     {
-      "class": "other",
+      "class": "thermostat",
       "capabilities": [
         "onoff",
         "onoff.smart_schedule",
