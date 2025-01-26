@@ -26,24 +26,6 @@ export class TadoRoomDevice extends TadoApiDevice {
         };
     }
 
-    async registerConditionFlows(): Promise<void> {
-        const smartScheduledStatusCondition = this.homey.flow.getConditionCard("tado_room_smart_schedule_status");
-        smartScheduledStatusCondition.registerRunListener(async () => {
-            return this.getCapabilityValue("onoff.smart_schedule");
-        });
-
-        const openWindowDetectedCondition = this.homey.flow.getConditionCard("tado_room_open_window_detected");
-        openWindowDetectedCondition.registerRunListener(async () => {
-            return this.getCapabilityValue("alarm_open_window_detected");
-        });
-
-        const earlyStartStatusCondition = this.homey.flow.getConditionCard("tado_room_early_start_status");
-        earlyStartStatusCondition.registerRunListener(async () => {
-            if (this.isGenerationX) return false;
-            return this.getCapabilityValue("onoff.early_start");
-        });
-    }
-
     public async boostHeating(duration: number): Promise<void> {
         await this.api.boostHeating(this.home_id, [this.id], duration);
     }
@@ -74,8 +56,6 @@ export class TadoRoomDevice extends TadoApiDevice {
         this.registerCapabilityListener("target_temperature", async (value) => {
             await this.setRoomTargetTemperature(value, "AUTO");
         });
-
-        await this.registerConditionFlows();
     }
 
     protected override async stop(): Promise<void> {

@@ -59,4 +59,22 @@ module.exports = class TadoRoomDriver extends TadoOAuth2Driver {
             await args.device.actionSetEarlyStart(args.enabled);
         });
     }
+
+    override async registerConditionFlows(): Promise<void> {
+        const smartScheduledStatusCondition = this.homey.flow.getConditionCard("tado_room_smart_schedule_status");
+        smartScheduledStatusCondition.registerRunListener(async (args: { device: TadoRoomDevice }) => {
+            return args.device.getCapabilityValue("onoff.smart_schedule");
+        });
+
+        const openWindowDetectedCondition = this.homey.flow.getConditionCard("tado_room_open_window_detected");
+        openWindowDetectedCondition.registerRunListener(async (args: { device: TadoRoomDevice }) => {
+            return args.device.getCapabilityValue("alarm_open_window_detected");
+        });
+
+        const earlyStartStatusCondition = this.homey.flow.getConditionCard("tado_room_early_start_status");
+        earlyStartStatusCondition.registerRunListener(async (args: { device: TadoRoomDevice }) => {
+            if (args.device.isGenerationX) return false;
+            return args.device.getCapabilityValue("onoff.early_start");
+        });
+    }
 };

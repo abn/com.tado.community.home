@@ -18,7 +18,7 @@ export abstract class TadoApiDevice extends OAuth2Device<TadoOAuth2Client> {
         return (generation ? generation : undefined) ?? "UNKNOWN";
     }
 
-    protected get isGenerationX(): boolean {
+    public get isGenerationX(): boolean {
         return this.generation === "LINE_X";
     }
 
