@@ -6,4 +6,11 @@ export class TadoOAuth2Driver extends OAuth2Driver<TadoOAuth2Client> {
     override async onPair(session: PairSession): Promise<void> {
         await super.onPair(session);
     }
+
+    async registerActionFlows(): Promise<void> {}
+
+    override async onOAuth2Init(): Promise<void> {
+        await super.onOAuth2Init();
+        await this.registerActionFlows().catch(this.error);
+    }
 }

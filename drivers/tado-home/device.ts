@@ -3,7 +3,7 @@ import { TadoApiDevice } from "../../lib/tado-api-device";
 import type { IntervalConfigurationCollection } from "homey-interval-manager";
 import type { State, StatePresence, TadoMode } from "node-tado-client";
 
-module.exports = class TadoHomeDevice extends TadoApiDevice {
+export class TadoHomeDevice extends TadoApiDevice {
     private get id(): number {
         return this.getData().id;
     }
@@ -35,57 +35,36 @@ module.exports = class TadoHomeDevice extends TadoApiDevice {
         };
     }
 
-    async registerActionFlows(): Promise<void> {
-        const meterReadingReportAction = this.homey.flow.getActionCard("meter_reading_report");
-        meterReadingReportAction.registerRunListener(
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            async (args: { date?: string; reading: number }, state: unknown) => {
-                await this.api.addEnergyIQMeterReading(this.id, this.formatFlowArgDate(args.date), args.reading);
-            },
-        );
+    public async reportMeterReading(reading: number, date?: string): Promise<void> {
+        await this.api.addEnergyIQMeterReading(this.id, this.formatFlowArgDate(date), reading);
+    }
 
-        const resumeScheduleAction = this.homey.flow.getActionCard("tado_home_resume_schedule");
-        resumeScheduleAction.registerRunListener(async () => {
-            await this.resumeSchedule();
-        });
+    public async actionSetGeofencingMode(mode: string, duration?: number): Promise<void> {
+        const previousGeofencingMode = await this.getCapabilityValue("tado_geofencing_mode");
+        await this.setGeofencingMode(mode.toUpperCase() as StatePresence);
 
-        const boostHeatingAction = this.homey.flow.getActionCard("tado_home_boost_heating");
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        boostHeatingAction.registerRunListener(async (args: { duration?: number }, state: unknown) => {
-            await this.boostHeating({ duration_seconds: args.duration ? args.duration / 1000 : 1800 });
-        });
+        if (duration != null) {
+            await this.homey.setTimeout(async () => {
+                try {
+                    const currentGeofencingMode = await this.getCurrentGeofencingMode();
 
-        const setGeofencingModeAction = this.homey.flow.getActionCard("tado_home_set_geofencing_mode");
-        setGeofencingModeAction.registerRunListener(
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            async (args: { mode: string; duration?: number }, state: unknown) => {
-                const previousGeofencingMode = await this.getCapabilityValue("tado_geofencing_mode");
-                await this.setGeofencingMode(args.mode.toUpperCase() as StatePresence);
-
-                if (args.duration != null) {
-                    await this.homey.setTimeout(async () => {
-                        try {
-                            const currentGeofencingMode = await this.getCurrentGeofencingMode();
-
-                            if (currentGeofencingMode === args.mode) {
-                                this.log(
-                                    `[Action:set_geofencing_mode] Duration set has elapsed, resetting geofencing mode to ${previousGeofencingMode}`,
-                                );
-                                await this.setGeofencingMode(
-                                    previousGeofencingMode.toUpperCase() as StatePresence,
-                                ).catch(this.error);
-                            } else {
-                                this.log(
-                                    "[Action:set_geofencing_mode] Duration set has elapsed but mode has changed elsewhere, skipping reset",
-                                );
-                            }
-                        } catch (error) {
-                            this.log("[Action:set_geofencing_mode] Failed to reset geofencing mode", error);
-                        }
-                    }, args.duration);
+                    if (currentGeofencingMode === mode) {
+                        this.log(
+                            `[Action:set_geofencing_mode] Duration set has elapsed, resetting geofencing mode to ${previousGeofencingMode}`,
+                        );
+                        await this.setGeofencingMode(previousGeofencingMode.toUpperCase() as StatePresence).catch(
+                            this.error,
+                        );
+                    } else {
+                        this.log(
+                            "[Action:set_geofencing_mode] Duration set has elapsed but mode has changed elsewhere, skipping reset",
+                        );
+                    }
+                } catch (error) {
+                    this.log("[Action:set_geofencing_mode] Failed to reset geofencing mode", error);
                 }
-            },
-        );
+            }, duration);
+        }
     }
 
     protected override async start(): Promise<void> {
@@ -106,8 +85,6 @@ module.exports = class TadoHomeDevice extends TadoApiDevice {
         this.registerCapabilityListener("button.restart_polling", async () => {
             await this.intervalManager.restart();
         });
-
-        await this.registerActionFlows().catch(this.error);
     }
 
     protected override async stop(): Promise<void> {
@@ -383,4 +360,6 @@ module.exports = class TadoHomeDevice extends TadoApiDevice {
             this.log("Failed to sync weather", error);
         }
     }
-};
+}
+
+module.exports = TadoHomeDevice;

@@ -3,7 +3,7 @@ import { TadoApiDevice } from "../../lib/tado-api-device";
 import type { IntervalConfigurationCollection } from "homey-interval-manager";
 import type { Termination, XRoom, ZoneState } from "node-tado-client";
 
-module.exports = class TadoRoomDevice extends TadoApiDevice {
+export class TadoRoomDevice extends TadoApiDevice {
     private get home_id(): number {
         return this.getData().homeId;
     }
@@ -26,26 +26,6 @@ module.exports = class TadoRoomDevice extends TadoApiDevice {
         };
     }
 
-    async registerActionFlows(): Promise<void> {
-        const resumeScheduleAction = this.homey.flow.getActionCard("tado_room_resume_schedule");
-        resumeScheduleAction.registerRunListener(async () => {
-            await this.resumeSchedule();
-        });
-
-        const boostHeatingAction = this.homey.flow.getActionCard("tado_room_boost_heating");
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        boostHeatingAction.registerRunListener(async (args: { duration?: number }, state: unknown) => {
-            await this.api.boostHeating(this.home_id, [this.id], args.duration ? args.duration / 1000 : 1800);
-        });
-
-        const earlyStartSetAction = this.homey.flow.getActionCard("tado_room_early_start_set");
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        earlyStartSetAction.registerRunListener(async (args: { enabled: boolean }, state: unknown) => {
-            if (this.isGenerationX) throw new Error("Tado X does not support early start");
-            await this.setEarlyStart(args.enabled);
-        });
-    }
-
     async registerConditionFlows(): Promise<void> {
         const smartScheduledStatusCondition = this.homey.flow.getConditionCard("tado_room_smart_schedule_status");
         smartScheduledStatusCondition.registerRunListener(async () => {
@@ -62,6 +42,15 @@ module.exports = class TadoRoomDevice extends TadoApiDevice {
             if (this.isGenerationX) return false;
             return this.getCapabilityValue("onoff.early_start");
         });
+    }
+
+    public async boostHeating(duration: number): Promise<void> {
+        await this.api.boostHeating(this.home_id, [this.id], duration);
+    }
+
+    public async actionSetEarlyStart(enabled: boolean): Promise<void> {
+        if (this.isGenerationX) throw new Error("Tado X does not support early start");
+        await this.setEarlyStart(enabled);
     }
 
     protected override async start(): Promise<void> {
@@ -86,7 +75,6 @@ module.exports = class TadoRoomDevice extends TadoApiDevice {
             await this.setRoomTargetTemperature(value, "AUTO");
         });
 
-        await this.registerActionFlows();
         await this.registerConditionFlows();
     }
 
@@ -134,7 +122,7 @@ module.exports = class TadoRoomDevice extends TadoApiDevice {
      * Helper Functions
      * ------------------------------------------------------------------
      */
-    protected async resumeSchedule(): Promise<void> {
+    public async resumeSchedule(): Promise<void> {
         await this.api.resumeScheduleHomey(this.home_id, this.id);
         await this.setCapabilityValue("onoff.smart_schedule", true);
     }
@@ -253,4 +241,6 @@ module.exports = class TadoRoomDevice extends TadoApiDevice {
      * Device Event Management
      * ------------------------------------------------------------------
      */
-};
+}
+
+module.exports = TadoRoomDevice;

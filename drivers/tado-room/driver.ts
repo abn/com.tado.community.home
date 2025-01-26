@@ -1,6 +1,7 @@
 import { TadoOAuth2Client } from "../../lib/tado-oauth2-client";
 import { HomeGeneration } from "node-tado-client";
 import { TadoOAuth2Driver } from "../../lib/tado-oauth2-driver";
+import { type TadoRoomDevice } from "./device";
 
 module.exports = class TadoRoomDriver extends TadoOAuth2Driver {
     /**
@@ -39,5 +40,23 @@ module.exports = class TadoRoomDriver extends TadoOAuth2Driver {
         }
 
         return devices;
+    }
+
+    override async registerActionFlows(): Promise<void> {
+        const resumeScheduleAction = this.homey.flow.getActionCard("tado_room_resume_schedule");
+        resumeScheduleAction.registerRunListener(async (args: { device: TadoRoomDevice }) => {
+            await args.device.resumeSchedule();
+        });
+
+        const boostHeatingAction = this.homey.flow.getActionCard("tado_room_boost_heating");
+        boostHeatingAction.registerRunListener(async (args: { device: TadoRoomDevice; duration?: number }) => {
+            await args.device.boostHeating(args.duration ? args.duration / 1000 : 1800);
+        });
+
+        const earlyStartSetAction = this.homey.flow.getActionCard("tado_room_early_start_set");
+
+        earlyStartSetAction.registerRunListener(async (args: { device: TadoRoomDevice; enabled: boolean }) => {
+            await args.device.actionSetEarlyStart(args.enabled);
+        });
     }
 };

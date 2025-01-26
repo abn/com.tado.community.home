@@ -1,6 +1,7 @@
 import { TadoOAuth2Client } from "../../lib/tado-oauth2-client";
 import { HomeGeneration } from "node-tado-client";
 import { TadoOAuth2Driver } from "../../lib/tado-oauth2-driver";
+import { type TadoHomeDevice } from "./device";
 
 module.exports = class TadoHomeDriver extends TadoOAuth2Driver {
     /**
@@ -40,6 +41,32 @@ module.exports = class TadoHomeDriver extends TadoOAuth2Driver {
                     ],
                 };
             }),
+        );
+    }
+
+    override async registerActionFlows(): Promise<void> {
+        const meterReadingReportAction = this.homey.flow.getActionCard("meter_reading_report");
+        meterReadingReportAction.registerRunListener(
+            async (args: { device: TadoHomeDevice; date?: string; reading: number }) => {
+                await args.device.reportMeterReading(args.reading, args.date);
+            },
+        );
+
+        const resumeScheduleAction = this.homey.flow.getActionCard("tado_home_resume_schedule");
+        resumeScheduleAction.registerRunListener(async (args: { device: TadoHomeDevice }) => {
+            await args.device.resumeSchedule();
+        });
+
+        const boostHeatingAction = this.homey.flow.getActionCard("tado_home_boost_heating");
+        boostHeatingAction.registerRunListener(async (args: { device: TadoHomeDevice; duration?: number }) => {
+            await args.device.boostHeating({ duration_seconds: args.duration ? args.duration / 1000 : 1800 });
+        });
+
+        const setGeofencingModeAction = this.homey.flow.getActionCard("tado_home_set_geofencing_mode");
+        setGeofencingModeAction.registerRunListener(
+            async (args: { device: TadoHomeDevice; mode: string; duration?: number }) => {
+                await args.device.actionSetGeofencingMode(args.mode, args.duration);
+            },
         );
     }
 };
