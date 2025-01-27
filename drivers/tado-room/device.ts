@@ -63,6 +63,11 @@ export class TadoRoomDevice extends TadoApiDevice {
     }
 
     protected override async migrate(): Promise<void> {
+        if (this.getClass() !== "thermostat") {
+            // this was changed in v2.3.0
+            await this.setClass("thermostat").catch(this.error);
+        }
+
         await this.migrateAddCapabilities(
             // Available from v1.0.4
             "tado_boost_heating",
