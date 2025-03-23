@@ -514,7 +514,7 @@
           "id": "list_sessions",
           "template": "list_devices",
           "navigation": {
-            "next": "login_credentials"
+            "next": "tado_device_auth"
           },
           "options": {
             "singular": true,
@@ -523,8 +523,7 @@
           }
         },
         {
-          "id": "login_credentials",
-          "template": "login_credentials"
+          "id": "tado_device_auth"
         },
         {
           "id": "list_devices",
@@ -540,8 +539,7 @@
       ],
       "repair": [
         {
-          "id": "login_credentials",
-          "template": "login_credentials"
+          "id": "tado_device_auth"
         }
       ],
       "name": {
@@ -721,7 +719,7 @@
           "id": "list_sessions",
           "template": "list_devices",
           "navigation": {
-            "next": "login_credentials"
+            "next": "tado_device_auth"
           },
           "options": {
             "singular": true,
@@ -730,8 +728,7 @@
           }
         },
         {
-          "id": "login_credentials",
-          "template": "login_credentials"
+          "id": "tado_device_auth"
         },
         {
           "id": "list_devices",
@@ -747,8 +744,7 @@
       ],
       "repair": [
         {
-          "id": "login_credentials",
-          "template": "login_credentials"
+          "id": "tado_device_auth"
         }
       ],
       "name": {

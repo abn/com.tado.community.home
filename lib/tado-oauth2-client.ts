@@ -1,5 +1,6 @@
 import { fetch, OAuth2Client, OAuth2Error, OAuth2Token } from "homey-oauth2app";
 import { TadoApiClient, TadoXApiClient } from "./tado-api-client";
+import PairSession from "homey/lib/PairSession";
 
 type AllowedMethods = "get" | "post" | "put" | "delete";
 type PayloadMethods = "post" | "put";
@@ -7,13 +8,13 @@ type PayloadMethods = "post" | "put";
 export class TadoOAuth2Client extends OAuth2Client<OAuth2Token> {
     // Required:
     static override API_URL = "https://my.tado.com/api/v2";
-    static override TOKEN_URL = "https://auth.tado.com/oauth/token";
-    static override AUTHORIZATION_URL = "https://auth.tado.com/oauth/authorize";
-    // static override SCOPES = ["home"];
+    static override TOKEN_URL = "https://login.tado.com/oauth2/token";
+    static override AUTHORIZATION_URL = ""; // Not used with device code flow
+    static override SCOPES = ["offline_access"];
 
-    // source: https://support.tado.com/en/articles/8565472-how-do-i-update-my-rest-api-authentication-method-to-oauth-2
-    static override CLIENT_ID = "public-api-preview";
-    static override CLIENT_SECRET = "4HJGRffVR8xb3XdEUQpjgZ1VplJi6Xgw";
+    // source: https://support.tado.com/en/articles/8565472-how-do-i-authenticate-to-access-the-rest-api
+    static override CLIENT_ID = "1bb50063-6b0c-4d11-bd99-387f4a91cc46";
+    static override CLIENT_SECRET = ""; // Not needed for device code flow
 
     public readonly tado: TadoApiClient = new TadoApiClient();
     public readonly tadox: TadoXApiClient = new TadoXApiClient();
@@ -90,5 +91,33 @@ export class TadoOAuth2Client extends OAuth2Client<OAuth2Token> {
 
         // this should never be hit
         throw new OAuth2Error("Failed to refresh token");
+    }
+
+    /**
+     * Authenticates a device using a tado client and retrieves an OAuth2 token.
+     *
+     * @param {PairSession} session - The pairing session instance used to emit authorization and completion events.
+     * @return {Promise<OAuth2Token>} Returns a promise resolving to an OAuth2 token containing access token, refresh token, and expiration details.
+     */
+    async getTokenByDeviceAuth(session: PairSession): Promise<OAuth2Token> {
+        const [verify, futureToken] = await this.tado.authenticate("refreshToken");
+
+        if (verify) {
+            const authorizationUrl = verify.verification_uri_complete;
+            await session.emit("url", authorizationUrl);
+        }
+        const tadoToken = await futureToken;
+
+        await session.emit("tado_authorization_completed", {}).catch(this.error);
+
+        const token = new OAuth2Token({
+            access_token: tadoToken.access_token,
+            refresh_token: tadoToken.refresh_token,
+            expires_in: Math.floor((tadoToken.expiry.getTime() - Date.now()) / 1000),
+        });
+
+        this.setToken({ token });
+
+        return token;
     }
 }

@@ -1,0 +1,149 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>tado° Authorization</title>
+        <style>
+            .loading-container {
+                text-align: center;
+                margin: 20px 0;
+            }
+
+            .spinner {
+                border: 4px solid rgba(0, 0, 0, 0.1);
+                border-radius: 50%;
+                border-top: 4px solid #009cdb;
+                width: 40px;
+                height: 40px;
+                animation: spin 1s linear infinite;
+                margin: 0 auto 10px;
+            }
+
+            @keyframes spin {
+                0% {
+                    transform: rotate(0deg);
+                }
+                100% {
+                    transform: rotate(360deg);
+                }
+            }
+
+            .button-container {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .button-container button {
+                width: 100%;
+            }
+
+            .auth-content {
+                display: none;
+            }
+        </style>
+    </head>
+    <body>
+        <!-- Initial authorization view -->
+        <div id="device-code-view">
+            <header class="homey-header">
+                <h1 class="homey-title">Link Your tado° Account</h1>
+                <p class="homey-subtitle">Connect your tado° system to Homey</p>
+            </header>
+
+            <form class="homey-form">
+                <!-- Loading animation -->
+                <div id="loading-view" class="loading-container">
+                    <div class="spinner"></div>
+                    <p>Preparing tado° authorization...</p>
+                </div>
+
+                <fieldset id="auth-content" class="homey-form-fieldset auth-content">
+                    <legend class="homey-form-legend">Authorization Steps</legend>
+
+                    <div class="homey-form-group">
+                        <p>To connect your account, please follow these steps:</p>
+                        <ol>
+                            <li>Your browser will open the tado° authorization page automatically</li>
+                            <li>Sign in with your tado° account credentials</li>
+                            <li>Verify the code shown on the authorization page</li>
+                            <li>Click Authorize to grant access</li>
+                            <li>Return to this page and click Continue when completed</li>
+                        </ol>
+                    </div>
+
+                    <div class="homey-form-group" style="text-align: center">
+                        <label class="homey-form-label">If the page doesn't open automatically:</label>
+                        <p><a id="authUrl" href="#" target="_blank">Click here to open tado° authorization</a></p>
+                    </div>
+                </fieldset>
+
+                <div class="button-container">
+                    <button id="continueButton" type="button" class="homey-button-primary-shadow-full" disabled>
+                        Continue
+                    </button>
+                    <button id="cancelButton" type="button" class="homey-button-secondary-shadow">Cancel</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Success view (initially hidden) -->
+        <div id="success-view" style="display: none">
+            <header class="homey-header">
+                <h1 class="homey-title">Account Successfully Connected!</h1>
+                <p class="homey-subtitle">Your tado° account has been linked to Homey</p>
+            </header>
+
+            <form class="homey-form">
+                <fieldset class="homey-form-fieldset">
+                    <div class="homey-form-group" style="text-align: center">
+                        <span style="font-size: 64px; color: #4caf50">✓</span>
+                        <p>You can now proceed to add your tado° home and devices.</p>
+                    </div>
+                </fieldset>
+
+                <button id="proceedButton" type="button" class="homey-button-primary-shadow-full">Continue</button>
+            </form>
+        </div>
+
+        <script type="application/javascript">
+            // Handle authorization completion
+            document.getElementById("continueButton").addEventListener("click", function () {
+                // Show loading state
+                this.classList.add("is-loading");
+                this.disabled = true;
+            });
+
+            // Handle cancel button - close the window
+            document.getElementById("cancelButton").addEventListener("click", function () {
+                Homey.emit("cancel").then(function () {
+                    Homey.done();
+                });
+            });
+
+            // Handle proceed button in success view
+            document.getElementById("proceedButton").addEventListener("click", function () {
+                Homey.nextView();
+            });
+
+            // Handle the url event - automatically open the URL when received
+            Homey.on("url", function (url) {
+                // Hide loading view and show auth content
+                document.getElementById("loading-view").style.display = "none";
+                document.getElementById("auth-content").style.display = "block";
+
+                // Set the URL in the link
+                const authUrlElement = document.getElementById("authUrl");
+                authUrlElement.href = url;
+
+                Homey.popup(url);
+            });
+
+            Homey.on("tado_authorization_completed", function (data) {
+                // Enable the continue button
+                const continueButton = document.getElementById("continueButton");
+                continueButton.disabled = false;
+            });
+        </script>
+    </body>
+</html>

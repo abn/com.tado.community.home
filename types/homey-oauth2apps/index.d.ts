@@ -53,6 +53,10 @@ declare module "homey-oauth2app" {
 
         destroy(): void;
 
+        setTitle(args: { title?: string; session?: { title?: string } }): void;
+
+        setToken(args: { token: OAuth2Token }): void;
+
         async onBuildRequest(args: {
             method: string;
             path: string;
@@ -93,11 +97,28 @@ declare module "homey-oauth2app" {
     }
 
     export class OAuth2Driver<T extends OAuth2Client> extends Homey.Driver {
+        static OAUTH2_CONFIG_ID = "default";
+        static OAUTH2_NEW_SESSION_TITLE = "New User";
+        static OAUTH2_NEW_SESSION_ICON = null;
+
         onOAuth2Init(): Promise<void>;
 
         onPairListDevices(payload: { oAuth2Client: T }): Promise<OAuth2DeviceResult[]>;
 
         onRepair(socket: PairSession, device: Homey.Device): void;
+
+        /**
+         * Returns the OAuth2 configuration ID for this driver
+         * @returns The OAuth2 configuration ID
+         */
+        getOAuth2ConfigId(): string;
+
+        /**
+         * Sets the OAuth2 configuration ID for this driver
+         * @param id The configuration ID to set
+         * @throws {OAuth2Error} If the ID is not a string
+         */
+        setOAuth2ConfigId(id: string): void;
 
         homey: Homey;
     }
@@ -142,5 +163,20 @@ declare module "homey-oauth2app" {
 
     export class OAuth2Error {
         constructor(message: string, statusCode?: number);
+    }
+
+    export class OAuth2Util {
+        /**
+         * Generates a random UUID
+         * @returns A randomly generated UUID string
+         */
+        static getRandomId(): string;
+
+        /**
+         * Waits for the specified amount of time
+         * @param delay Time to wait in milliseconds
+         * @returns A promise that resolves after the delay
+         */
+        static wait(delay?: number): Promise<void>;
     }
 }
