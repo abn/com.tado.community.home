@@ -55,5 +55,8 @@
   },
   "3.0.0": {
     "en": "Update to new authentication flow."
+  },
+  "3.0.1": {
+    "en": "Update tado client. "
   }
 }
