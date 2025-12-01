@@ -7,7 +7,7 @@ jobs:
     name: Publish Homey App
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - uses: abn/github-action-homey-app/setup@main
 
