@@ -2,7 +2,7 @@
   "name": "com.tado.community.home",
   "version": "1.0.0",
   "scripts": {
-    "compile": "tsc",
+    "build": "tsc",
     "lint": "eslint --fix",
     "lint:check": "eslint",
     "format": "prettier --write .",
