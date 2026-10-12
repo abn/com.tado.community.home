@@ -159,9 +159,13 @@ export class TadoRoomDevice extends TadoApiDevice {
                 await this.setCapabilityValue("target_temperature", isOff ? previousValue : Math.max(0.0, value));
                 await this.setCapabilityValue("onoff", !isOff);
             })
-            .catch(async (...args) => {
+            .catch(async (error) => {
                 await this.setCapabilityValue("target_temperature", previousValue);
-                this.error(...args);
+                this.error(error);
+
+                // the capability is back where it was, but the caller asked
+                // for a change that did not land, so let it know
+                throw error;
             });
     }
 
