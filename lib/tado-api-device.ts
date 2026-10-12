@@ -1,6 +1,6 @@
 import { OAuth2Device } from "homey-oauth2app";
 import { HomeyIntervalManager, IntervalConfiguration, IntervalConfigurationCollection } from "homey-interval-manager";
-import { TadoApiClient, TadoXApiClient } from "./tado-api-client";
+import { BOOST_TEMPERATURE_CELSIUS, TadoApiClient, TadoXApiClient } from "./tado-api-client";
 import { TadoOAuth2Client } from "./tado-oauth2-client";
 import { HomeGeneration } from "node-tado-client";
 
@@ -20,6 +20,15 @@ export abstract class TadoApiDevice extends OAuth2Device<TadoOAuth2Client> {
 
     public get isGenerationX(): boolean {
         return this.generation === "LINE_X";
+    }
+
+    /**
+     * The temperature tado° drives a room to while boost heating is
+     * active. Boost is not reported as a setting, so this is the only
+     * way to show the user what the room is actually being held at.
+     */
+    protected get boostTemperature(): number {
+        return this.isGenerationX ? BOOST_TEMPERATURE_CELSIUS.LINE_X : BOOST_TEMPERATURE_CELSIUS.PRE_LINE_X;
     }
 
     protected get api(): TadoApiClient | TadoXApiClient {
