@@ -16,7 +16,8 @@
     "tado_boost_heating",
     "tado_heating_power",
     "button.restart_polling",
-    "alarm_open_window_detected"
+    "alarm_open_window_detected",
+    "alarm_room_connectivity"
   ],
   "capabilitiesOptions": {
     "button.restart_polling": {

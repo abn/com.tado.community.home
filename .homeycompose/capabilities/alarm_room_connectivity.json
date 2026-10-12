@@ -1,0 +1,16 @@
+{
+  "type": "boolean",
+  "title": { "en": "Room connection" },
+  "insights": true,
+  "insightsTitleTrue": {
+    "en": "Connected"
+  },
+  "insightsTitleFalse": {
+    "en": "Not connected"
+  },
+  "getable": true,
+  "setable": false,
+  "uiComponent": "sensor",
+  "uiQuickAction": false,
+  "icon": "/assets/icons/capabilities/alarm_room_connectivity.svg"
+}
