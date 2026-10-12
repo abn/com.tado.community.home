@@ -1,5 +1,21 @@
 import { Tado, TadoX, Termination, XTermination } from "node-tado-client";
 
+/**
+ * Boost heating drives a room to the top of the range its generation
+ * supports: 5-25 °C for pre-line-X zones and 5-30 °C for line-X rooms.
+ */
+export const BOOST_TEMPERATURE_CELSIUS = {
+    PRE_LINE_X: 25,
+    LINE_X: 30,
+} as const;
+
+/** Both generations floor the range at the same temperature. */
+const MINIMUM_TEMPERATURE_CELSIUS = 5.0;
+
+function clampToSupportedRange(value: number, maximum: number): number {
+    return Math.max(Math.min(value, maximum), MINIMUM_TEMPERATURE_CELSIUS);
+}
+
 export class TadoApiClient extends Tado {
     public async boostHeating(home_id: number, room_ids: number[], durationSeconds: number = 1800): Promise<void> {
         await this.setZoneOverlays(
@@ -8,10 +24,7 @@ export class TadoApiClient extends Tado {
                 return {
                     isBoost: true,
                     power: "ON",
-                    temperature: {
-                        celsius: 25,
-                        fahrenheit: 77,
-                    },
+                    temperature: { celsius: BOOST_TEMPERATURE_CELSIUS.PRE_LINE_X },
                     zone_id: room_id,
                 };
             }),
@@ -25,9 +38,11 @@ export class TadoApiClient extends Tado {
         termination: Termination | number,
         value: number,
     ): Promise<void> {
-        const isOff = value < 5.0;
-        // the api only allows a supported range of 5–25°C
-        const temperature = isOff ? null : { celsius: Math.max(Math.min(value, 25.0), 5.0) };
+        const isOff = value < MINIMUM_TEMPERATURE_CELSIUS;
+        // the api only allows the range the generation supports
+        const temperature = isOff
+            ? null
+            : { celsius: clampToSupportedRange(value, BOOST_TEMPERATURE_CELSIUS.PRE_LINE_X) };
 
         await this.setZoneOverlays(
             home_id,
@@ -55,7 +70,7 @@ export class TadoXApiClient extends TadoX {
     public async boostHeating(home_id: number, room_ids: number[], durationSeconds: number = 1800): Promise<void> {
         await Promise.all(
             room_ids.map((room_id: number) => {
-                return this.manualControl(home_id, room_id, "ON", durationSeconds, 25);
+                return this.manualControl(home_id, room_id, "ON", durationSeconds, BOOST_TEMPERATURE_CELSIUS.LINE_X);
             }),
         );
     }
@@ -66,9 +81,9 @@ export class TadoXApiClient extends TadoX {
         termination: XTermination | "AUTO" | number,
         value: number,
     ): Promise<void> {
-        const isOff = value < 5.0;
-        // the api only allows a supported range of 5–25°C
-        const temperature = isOff ? undefined : Math.max(Math.min(value, 30.0), 5.0);
+        const isOff = value < MINIMUM_TEMPERATURE_CELSIUS;
+        // the api only allows the range the generation supports
+        const temperature = isOff ? undefined : clampToSupportedRange(value, BOOST_TEMPERATURE_CELSIUS.LINE_X);
 
         await this.manualControl(
             home_id,

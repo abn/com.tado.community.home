@@ -157,6 +157,7 @@ export class TadoRoomDevice extends TadoApiDevice {
         let target_temperature: number | undefined;
         let tado_presence_mode;
         let isSmartScheduleOn;
+        let isBoosting: boolean;
 
         try {
             if (this.isGenerationX) {
@@ -166,6 +167,9 @@ export class TadoRoomDevice extends TadoApiDevice {
                 isSmartScheduleOn = state.manualControlTermination === null;
                 target_temperature = state.setting.temperature?.value;
                 tado_heating_power = state.heatingPower?.percentage;
+                // boost is reported as a mode of its own and leaves the
+                // setting temperature empty
+                isBoosting = state.boostMode != null;
 
                 // the hops api does not provide geo location data in initial response
                 const home_state = await this.api_x.getState(this.home_id);
@@ -176,6 +180,7 @@ export class TadoRoomDevice extends TadoApiDevice {
                 tado_presence_mode = state.tadoMode.toLowerCase();
                 isSmartScheduleOn = state.overlayType === null;
                 target_temperature = state.setting.temperature?.celsius;
+                isBoosting = state.setting.isBoost === true;
 
                 if ("heatingPower" in state.activityDataPoints) {
                     tado_heating_power =
@@ -197,7 +202,9 @@ export class TadoRoomDevice extends TadoApiDevice {
             const isTurnedOn = state.setting.power == "ON";
             await this.setCapabilityValue("onoff", isTurnedOn);
 
-            if (target_temperature || isTurnedOn) {
+            if (isBoosting) {
+                await this.setCapabilityValue("target_temperature", this.boostTemperature);
+            } else if (target_temperature || isTurnedOn) {
                 await this.setCapabilityValue("target_temperature", target_temperature ?? 5.0);
             }
 
