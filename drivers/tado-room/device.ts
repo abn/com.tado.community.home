@@ -4,6 +4,13 @@ import type { IntervalConfigurationCollection } from "homey-interval-manager";
 import type { Termination, XRoom, ZoneState } from "node-tado-client";
 
 export class TadoRoomDevice extends TadoApiDevice {
+    private static readonly ROOM_STATE_SETTING = "room_state_polling_interval";
+    /**
+     * The room state interval the app ships in its settings, used when a
+     * device has none stored. Erring low costs a request, never stale data.
+     */
+    private static readonly ROOM_STATE_INTERVAL_SECONDS = 60;
+
     private get home_id(): number {
         return this.getData().homeId;
     }
@@ -12,11 +19,22 @@ export class TadoRoomDevice extends TadoApiDevice {
         return this.getData().id;
     }
 
+    /**
+     * How old a shared room state snapshot may be before this device
+     * would rather ask for a newer one. Reading this device's own
+     * interval keeps every room of a home sharing the same request,
+     * while a room polling more often than the rest stays honest.
+     */
+    private get roomStateMaxAgeMs(): number {
+        const interval = this.getSetting(TadoRoomDevice.ROOM_STATE_SETTING);
+        return (typeof interval === "number" ? interval : TadoRoomDevice.ROOM_STATE_INTERVAL_SECONDS) * 1000;
+    }
+
     protected override get intervalConfigs(): IntervalConfigurationCollection<TadoRoomDevice> {
         return {
             ROOM_STATE: {
                 functionName: "syncRoomState",
-                settingName: "room_state_polling_interval",
+                settingName: TadoRoomDevice.ROOM_STATE_SETTING,
             },
             EARLY_START: {
                 functionName: "syncEarlyStart",
@@ -164,7 +182,14 @@ export class TadoRoomDevice extends TadoApiDevice {
 
         try {
             if (this.isGenerationX) {
-                state = await this.api_x.getRoomState(this.home_id, this.id);
+                const { rooms, presence } = await this.api_x.getRoomStates(this.home_id, this.roomStateMaxAgeMs);
+                const room = rooms.get(this.id);
+                if (room === undefined) {
+                    this.log("Room is missing from the home response, skipping state sync");
+                    return;
+                }
+
+                state = room;
                 measure_temperature = state.sensorDataPoints.insideTemperature.value;
                 // tado_presence_mode = state;
                 isSmartScheduleOn = state.manualControlTermination === null;
@@ -178,10 +203,16 @@ export class TadoRoomDevice extends TadoApiDevice {
                 isConnected = (state.connection as { state?: string })?.state === "CONNECTED";
 
                 // the hops api does not provide geo location data in initial response
-                const home_state = await this.api_x.getState(this.home_id);
-                tado_presence_mode = home_state.presence.toLowerCase();
+                tado_presence_mode = presence.toLowerCase();
             } else {
-                state = await this.api_v2.getZoneState(this.home_id, this.id);
+                const rooms = await this.api_v2.getRoomStates(this.home_id, this.roomStateMaxAgeMs);
+                const zone = rooms.get(this.id);
+                if (zone === undefined) {
+                    this.log("Room is missing from the home response, skipping state sync");
+                    return;
+                }
+
+                state = zone;
                 measure_temperature = state.sensorDataPoints.insideTemperature.celsius;
                 tado_presence_mode = state.tadoMode.toLowerCase();
                 isSmartScheduleOn = state.overlayType === null;
@@ -197,7 +228,6 @@ export class TadoRoomDevice extends TadoApiDevice {
                 }
             }
 
-            // await this.setCapabilityValue("alarm_connectivity", state.link.state == "ONLINE");
             await this.setCapabilityValue("measure_humidity", state.sensorDataPoints.humidity.percentage);
             await this.setCapabilityValue("measure_temperature", measure_temperature);
             await this.setCapabilityValue("tado_presence_mode", tado_presence_mode);

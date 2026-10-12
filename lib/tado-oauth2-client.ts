@@ -5,6 +5,38 @@ import PairSession from "homey/lib/PairSession";
 type AllowedMethods = "get" | "post" | "put" | "delete";
 type PayloadMethods = "post" | "put";
 
+/** The share of the daily request allowance tado° has left this account. */
+interface RateLimitStatus {
+    quota: number;
+    remaining: number;
+    resetsIn?: number;
+}
+
+/** Reads a `key=number` pair out of one of tado°'s rate limit headers. */
+function headerValue(header: string, key: string): number | undefined {
+    const match = new RegExp(`${key}=(\\d+)`).exec(header);
+    return match === null ? undefined : Number(match[1]);
+}
+
+/**
+ * tado° reports the allowance for the account on every response, as
+ * `ratelimit-policy: "perday";q=<quota>;w=<window>` alongside
+ * `ratelimit: "perday";r=<remaining>;t=<seconds to reset>`. We read
+ * them here because the client replaces the api call this library
+ * parses them in.
+ */
+function parseRateLimit(headers: fetch.Headers): RateLimitStatus | undefined {
+    const policy = headers.get("ratelimit-policy");
+    const current = headers.get("ratelimit");
+    if (policy === null || current === null) return undefined;
+
+    const quota = headerValue(policy, "q");
+    const remaining = headerValue(current, "r");
+    if (quota === undefined || remaining === undefined) return undefined;
+
+    return { quota, remaining, resetsIn: headerValue(current, "t") };
+}
+
 export class TadoOAuth2Client extends OAuth2Client<OAuth2Token> {
     // Required:
     static override API_URL = "https://my.tado.com/api/v2";
@@ -19,6 +51,9 @@ export class TadoOAuth2Client extends OAuth2Client<OAuth2Token> {
     public readonly tado: TadoApiClient = new TadoApiClient();
     public readonly tadox: TadoXApiClient = new TadoXApiClient();
 
+    /** When the allowance ran out, until tado° says it is back. */
+    private exhaustedUntil: number = 0;
+
     /**
      * Monkey patch method to replace `TadoApiClient.apiCall()` in order to use the authenticated session from `OAuth2Client`.
      */
@@ -27,10 +62,62 @@ export class TadoOAuth2Client extends OAuth2Client<OAuth2Token> {
         method: keyof this & AllowedMethods = "get",
         data?: M extends PayloadMethods ? unknown : never,
     ): Promise<T> {
+        this.assertAllowanceAvailable();
+
         return this[method.toLowerCase() as AllowedMethods]({
             path: url.replace("/api/v2", ""),
             json: data,
         });
+    }
+
+    /**
+     * tado° counts every request against a daily allowance and does not
+     * hand one back until the window rolls over, so once it is spent the
+     * answer is a refusal until then. Ask anyway and the day ends up
+     * refusing requests that other devices still needed.
+     */
+    private assertAllowanceAvailable(): void {
+        const resetsInMs = this.exhaustedUntil - Date.now();
+        if (resetsInMs <= 0) return;
+
+        throw new OAuth2Error(
+            `The tado° request allowance of today is spent, ${Math.ceil(resetsInMs / 1000)}s until it resets`,
+        );
+    }
+
+    /**
+     * Records the allowance tado° reported and, once it is spent, holds
+     * requests back until the window resets.
+     */
+    private updateRateLimit(headers: fetch.Headers): void {
+        const rateLimit = parseRateLimit(headers);
+        if (rateLimit === undefined || rateLimit.resetsIn === undefined) return;
+        if (rateLimit.remaining > 0 || Date.now() < this.exhaustedUntil) return;
+
+        this.exhaustedUntil = Date.now() + rateLimit.resetsIn * 1000;
+        this.log(
+            `The tado° request allowance of ${rateLimit.quota} per day is spent, holding requests for ${rateLimit.resetsIn}s`,
+        );
+    }
+
+    override async onIsRateLimited(args: { status: number; headers: fetch.Headers }): Promise<boolean> {
+        // a refusal carries the same headers and reaches us before the
+        // response handler does
+        this.updateRateLimit(args.headers);
+
+        return super.onIsRateLimited(args);
+    }
+
+    override async onHandleResponse(args: {
+        response: fetch.Response;
+        status: number;
+        statusText: string;
+        headers: fetch.Headers;
+        ok: boolean;
+    }): Promise<unknown> {
+        this.updateRateLimit(args.headers);
+
+        return super.onHandleResponse(args);
     }
 
     override async onInit(): Promise<void> {
