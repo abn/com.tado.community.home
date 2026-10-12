@@ -76,6 +76,8 @@ export class TadoRoomDevice extends TadoApiDevice {
             "onoff.smart_schedule",
             // Available from v1.1.4
             "alarm_open_window_detected",
+            // Available from v3.1.0
+            "alarm_room_connectivity",
         );
 
         // Configured since v1.2.4
@@ -158,6 +160,7 @@ export class TadoRoomDevice extends TadoApiDevice {
         let tado_presence_mode;
         let isSmartScheduleOn;
         let isBoosting: boolean;
+        let isConnected: boolean;
 
         try {
             if (this.isGenerationX) {
@@ -170,6 +173,9 @@ export class TadoRoomDevice extends TadoApiDevice {
                 // boost is reported as a mode of its own and leaves the
                 // setting temperature empty
                 isBoosting = state.boostMode != null;
+                // node-tado-client types the field as `string`, but the hops
+                // api returns the connection state as `state`
+                isConnected = (state.connection as { state?: string })?.state === "CONNECTED";
 
                 // the hops api does not provide geo location data in initial response
                 const home_state = await this.api_x.getState(this.home_id);
@@ -181,6 +187,7 @@ export class TadoRoomDevice extends TadoApiDevice {
                 isSmartScheduleOn = state.overlayType === null;
                 target_temperature = state.setting.temperature?.celsius;
                 isBoosting = state.setting.isBoost === true;
+                isConnected = state.link?.state == "ONLINE";
 
                 if ("heatingPower" in state.activityDataPoints) {
                     tado_heating_power =
@@ -195,6 +202,7 @@ export class TadoRoomDevice extends TadoApiDevice {
             await this.setCapabilityValue("measure_temperature", measure_temperature);
             await this.setCapabilityValue("tado_presence_mode", tado_presence_mode);
             await this.setCapabilityValue("onoff.smart_schedule", isSmartScheduleOn);
+            await this.setCapabilityValue("alarm_room_connectivity", isConnected);
 
             const isWindowOpen = state.openWindow !== null;
             await this.setCapabilityValue("alarm_open_window_detected", isWindowOpen);

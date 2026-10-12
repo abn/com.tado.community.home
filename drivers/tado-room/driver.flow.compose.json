@@ -23,6 +23,18 @@
       "title": {
         "en": "Early start disabled"
       }
+    },
+    {
+      "id": "alarm_room_connectivity_false",
+      "title": {
+        "en": "Room connection lost"
+      }
+    },
+    {
+      "id": "alarm_room_connectivity_true",
+      "title": {
+        "en": "Room reconnected"
+      }
     }
   ],
   "actions": [
@@ -84,6 +96,12 @@
       "id": "tado_room_early_start_status",
       "title": {
         "en": "Early start !{{is|isn't}} enabled"
+      }
+    },
+    {
+      "id": "alarm_room_connectivity",
+      "title": {
+        "en": "Room is !{{connected|not connected}}"
       }
     }
   ]

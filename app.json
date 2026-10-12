@@ -201,6 +201,32 @@
             "filter": "driver_id=tado-room"
           }
         ]
+      },
+      {
+        "id": "alarm_room_connectivity_false",
+        "title": {
+          "en": "Room connection lost"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=tado-room"
+          }
+        ]
+      },
+      {
+        "id": "alarm_room_connectivity_true",
+        "title": {
+          "en": "Room reconnected"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=tado-room"
+          }
+        ]
       }
     ],
     "actions": [
@@ -420,6 +446,19 @@
         "id": "tado_room_early_start_status",
         "title": {
           "en": "Early start !{{is|isn't}} enabled"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=tado-room"
+          }
+        ]
+      },
+      {
+        "id": "alarm_room_connectivity",
+        "title": {
+          "en": "Room is !{{connected|not connected}}"
         },
         "args": [
           {
@@ -659,7 +698,8 @@
         "tado_boost_heating",
         "tado_heating_power",
         "button.restart_polling",
-        "alarm_open_window_detected"
+        "alarm_open_window_detected",
+        "alarm_room_connectivity"
       ],
       "capabilitiesOptions": {
         "button.restart_polling": {
@@ -813,6 +853,24 @@
       "uiComponent": "sensor",
       "uiQuickAction": false,
       "icon": "/assets/icons/capabilities/alarm_open_window_detected.svg"
+    },
+    "alarm_room_connectivity": {
+      "type": "boolean",
+      "title": {
+        "en": "Room connection"
+      },
+      "insights": true,
+      "insightsTitleTrue": {
+        "en": "Connected"
+      },
+      "insightsTitleFalse": {
+        "en": "Not connected"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "uiQuickAction": false,
+      "icon": "/assets/icons/capabilities/alarm_room_connectivity.svg"
     },
     "tado_boost_heating": {
       "type": "boolean",
