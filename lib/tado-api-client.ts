@@ -12,6 +12,13 @@ export const BOOST_TEMPERATURE_CELSIUS = {
 /** Both generations floor the range at the same temperature. */
 const MINIMUM_TEMPERATURE_CELSIUS = 5.0;
 
+/**
+ * How long a room state request may be outstanding before a later poll
+ * stops waiting on it. tado° answers in seconds, so anything still
+ * running after a minute is a connection that has gone quiet.
+ */
+const STALLED_REQUEST_MS = 60 * 1000;
+
 function clampToSupportedRange(value: number, maximum: number): number {
     return Math.max(Math.min(value, maximum), MINIMUM_TEMPERATURE_CELSIUS);
 }
@@ -25,9 +32,18 @@ function clampToSupportedRange(value: number, maximum: number): number {
  */
 class SharedRoomState<T> {
     private readonly snapshots = new Map<number, { fetchedAt: number; value: T }>();
-    private readonly inFlight = new Map<number, Promise<T>>();
+    private readonly inFlight = new Map<number, { startedAt: number; load: Promise<T> }>();
 
     public constructor(private readonly load: (home_id: number) => Promise<T>) {}
+
+    /**
+     * Forgets the snapshot for a home. A write that lands in tado° leaves
+     * the snapshot describing the state before it, so serving that until
+     * it ages out would show the room back as it was.
+     */
+    public clear(home_id: number): void {
+        this.snapshots.delete(home_id);
+    }
 
     public async get(home_id: number, maxAgeMs: number): Promise<T> {
         const snapshot = this.snapshots.get(home_id);
@@ -35,21 +51,24 @@ class SharedRoomState<T> {
             return snapshot.value;
         }
 
-        let inFlight = this.inFlight.get(home_id);
-        if (inFlight === undefined) {
-            inFlight = this.load(home_id);
-            this.inFlight.set(home_id, inFlight);
-            inFlight
-                .then((value) => {
-                    this.snapshots.set(home_id, { fetchedAt: Date.now(), value });
-                })
-                .catch(() => undefined)
-                .finally(() => {
-                    this.inFlight.delete(home_id);
-                });
+        const started = this.inFlight.get(home_id);
+        if (started !== undefined && Date.now() - started.startedAt < STALLED_REQUEST_MS) {
+            return started.load;
         }
 
-        return inFlight;
+        // a request that never settles would otherwise wedge every later
+        // poll behind it, so treat an old one as lost and ask again
+        const load = this.load(home_id);
+        this.inFlight.set(home_id, { startedAt: Date.now(), load });
+        load.then((value) => {
+            this.snapshots.set(home_id, { fetchedAt: Date.now(), value });
+        })
+            .catch(() => undefined)
+            .finally(() => {
+                if (this.inFlight.get(home_id)?.load === load) this.inFlight.delete(home_id);
+            });
+
+        return load;
     }
 }
 
@@ -83,6 +102,8 @@ export class TadoApiClient extends Tado {
             }),
             durationSeconds,
         );
+
+        this.roomStateSnapshot.clear(home_id);
     }
 
     public async setRoomTemperature(
@@ -108,6 +129,8 @@ export class TadoApiClient extends Tado {
             ],
             termination,
         );
+
+        this.roomStateSnapshot.clear(home_id);
     }
 
     public async getActiveRoomIds(home_id: number): Promise<number[]> {
@@ -115,7 +138,9 @@ export class TadoApiClient extends Tado {
     }
 
     public async resumeScheduleHomey(home_id: number, room_id?: number): Promise<void> {
-        return this.clearZoneOverlays(home_id, room_id ? [room_id] : await this.getActiveRoomIds(home_id));
+        await this.clearZoneOverlays(home_id, room_id ? [room_id] : await this.getActiveRoomIds(home_id));
+
+        this.roomStateSnapshot.clear(home_id);
     }
 }
 
@@ -148,6 +173,8 @@ export class TadoXApiClient extends TadoX {
                 return this.manualControl(home_id, room_id, "ON", durationSeconds, BOOST_TEMPERATURE_CELSIUS.LINE_X);
             }),
         );
+
+        this.roomStateSnapshot.clear(home_id);
     }
 
     public async setRoomTemperature(
@@ -167,6 +194,8 @@ export class TadoXApiClient extends TadoX {
             termination === "AUTO" ? "NEXT_TIME_BLOCK" : termination,
             temperature,
         );
+
+        this.roomStateSnapshot.clear(home_id);
     }
 
     public async getActiveRoomIds(home_id: number): Promise<number[]> {
@@ -179,5 +208,7 @@ export class TadoXApiClient extends TadoX {
         } else {
             await this.performQuickAction(home_id, "resumeSchedule");
         }
+
+        this.roomStateSnapshot.clear(home_id);
     }
 }
