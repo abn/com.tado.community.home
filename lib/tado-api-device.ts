@@ -67,15 +67,19 @@ export abstract class TadoApiDevice extends OAuth2Device<TadoOAuth2Client> {
      */
 
     protected async migrateRemoveCapabilities(...capabilities: string[]): Promise<void> {
-        capabilities.map(async (capability) => {
-            if (this.hasCapability(capability)) await this.removeCapability(capability).catch(this.error);
-        });
+        await Promise.all(
+            capabilities.map(async (capability) => {
+                if (this.hasCapability(capability)) await this.removeCapability(capability).catch(this.error);
+            }),
+        );
     }
 
     protected async migrateAddCapabilities(...capabilities: string[]): Promise<void> {
-        capabilities.map(async (capability) => {
-            if (!this.hasCapability(capability)) await this.addCapability(capability).catch(this.error);
-        });
+        await Promise.all(
+            capabilities.map(async (capability) => {
+                if (!this.hasCapability(capability)) await this.addCapability(capability).catch(this.error);
+            }),
+        );
     }
 
     protected async migrate(): Promise<void> {
