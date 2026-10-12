@@ -71,6 +71,11 @@ module.exports = class TadoRoomDriver extends TadoOAuth2Driver {
             return args.device.getCapabilityValue("alarm_open_window_detected");
         });
 
+        const roomConnectivityCondition = this.homey.flow.getConditionCard("alarm_room_connectivity");
+        roomConnectivityCondition.registerRunListener(async (args: { device: TadoRoomDevice }) => {
+            return args.device.getCapabilityValue("alarm_room_connectivity");
+        });
+
         const earlyStartStatusCondition = this.homey.flow.getConditionCard("tado_room_early_start_status");
         earlyStartStatusCondition.registerRunListener(async (args: { device: TadoRoomDevice }) => {
             if (args.device.isGenerationX) return false;
