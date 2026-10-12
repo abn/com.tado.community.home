@@ -45,6 +45,16 @@ declare module "homey-oauth2app" {
 
         onShouldRefreshToken(args: { status: number }): Promise<boolean>;
 
+        onIsRateLimited(args: { status: number; headers: fetch.Headers }): Promise<boolean>;
+
+        onHandleResponse(args: {
+            response: fetch.Response;
+            status: number;
+            statusText: string;
+            headers: fetch.Headers;
+            ok: boolean;
+        }): Promise<any>;
+
         getToken(): TToken;
 
         async refreshToken(...args): Promise<void>;
