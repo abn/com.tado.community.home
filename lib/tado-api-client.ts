@@ -29,7 +29,7 @@ export class TadoApiClient extends Tado {
         // the api only allows a supported range of 5–25°C
         const temperature = isOff ? null : { celsius: Math.max(Math.min(value, 25.0), 5.0) };
 
-        this.setZoneOverlays(
+        await this.setZoneOverlays(
             home_id,
             [
                 {
@@ -53,9 +53,11 @@ export class TadoApiClient extends Tado {
 
 export class TadoXApiClient extends TadoX {
     public async boostHeating(home_id: number, room_ids: number[], durationSeconds: number = 1800): Promise<void> {
-        room_ids.map(async (room_id: number) => {
-            await this.manualControl(home_id, room_id, "ON", durationSeconds, 25);
-        });
+        await Promise.all(
+            room_ids.map((room_id: number) => {
+                return this.manualControl(home_id, room_id, "ON", durationSeconds, 25);
+            }),
+        );
     }
 
     public async setRoomTemperature(
