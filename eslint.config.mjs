@@ -4,7 +4,7 @@ import tseslint from "typescript-eslint";
 import eslintPluginPrettierRecommended from "eslint-plugin-prettier/recommended";
 
 export default [
-    { ignores: [".node_modules/*", ".homeybuild/*"] },
+    { ignores: [".node_modules/*", ".homeybuild"] },
     {
         files: ["**/*.{js,mjs,cjs,ts}"],
         languageOptions: { parser: "@typescript-eslint/parser", globals: globals.node },
