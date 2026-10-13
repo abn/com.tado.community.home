@@ -58,5 +58,8 @@
   },
   "3.0.1": {
     "en": "Update tado client. "
+  },
+  "3.1.0": {
+    "en": "Added a room connection alarm with flow triggers and a condition, fixed boost heating reporting, fixed a failed room temperature write reporting success, reduced API requests to one per home per polling interval, and updated all dependencies."
   }
 }
