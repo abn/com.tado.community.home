@@ -106,19 +106,26 @@
             </form>
         </div>
 
-        <script type="application/javascript">
-            // Handle authorization completion
-            document.getElementById("continueButton").addEventListener("click", function () {
-                // Show loading state
-                this.classList.add("is-loading");
-                this.disabled = true;
-            });
+        <!-- Error view (initially hidden) -->
+        <div id="error-view" style="display: none">
+            <header class="homey-header">
+                <h1 class="homey-title">Could Not Link Your tado° Account</h1>
+                <p class="homey-subtitle" id="error-message"></p>
+            </header>
 
-            // Handle cancel button - close the window
+            <form class="homey-form">
+                <button id="errorCloseButton" type="button" class="homey-button-primary-shadow-full">Close</button>
+            </form>
+        </div>
+
+        <script type="application/javascript">
+            // Handle cancel button - stop the pending flow and close the window
             document.getElementById("cancelButton").addEventListener("click", function () {
-                Homey.emit("cancel").then(function () {
-                    Homey.done();
-                });
+                Homey.emit("cancel")
+                    .catch(function () {})
+                    .then(function () {
+                        Homey.done();
+                    });
             });
 
             // Handle proceed button in success view
@@ -140,9 +147,25 @@
             });
 
             Homey.on("tado_authorization_completed", function (data) {
-                // Enable the continue button
+                // The backend finishes the session and moves on; show
+                // progress until it does.
                 const continueButton = document.getElementById("continueButton");
-                continueButton.disabled = false;
+                continueButton.textContent = "Finishing setup…";
+                continueButton.classList.add("is-loading");
+                continueButton.disabled = true;
+            });
+
+            Homey.on("error", function (data) {
+                document.getElementById("device-code-view").style.display = "none";
+                document.getElementById("success-view").style.display = "none";
+                document.getElementById("error-view").style.display = "block";
+
+                const message = data && data.message ? data.message : String(data);
+                document.getElementById("error-message").textContent = message;
+            });
+
+            document.getElementById("errorCloseButton").addEventListener("click", function () {
+                Homey.done();
             });
         </script>
     </body>
