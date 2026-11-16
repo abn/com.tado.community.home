@@ -101,6 +101,8 @@ declare module "homey-oauth2app" {
 
         onOAuth2Added(): Promise<void>;
 
+        onOAuth2Saved(): Promise<void>;
+
         onOAuth2Deleted(): Promise<void>;
 
         homey: Homey;

@@ -35,8 +35,9 @@ tado° limits how often the app may call its cloud. The allowance is 100 request
 20,000 a day with Auto Assist or AI Assist, see
 [tado°'s own explanation](https://help.tado.com/en/articles/12165739-limitation-for-rest-api-usage).
 
-The app reads the allowance from every response it gets and stops asking once the day is used up, then picks up again
-when the allowance resets. A room keeps showing its last known state in the meantime rather than reporting an error.
+The app reads the allowance from every response it gets and stops polling once the day is nearly used up, then picks
+up again when the allowance resets. A small part of the allowance is held back from polling so pairing and adding
+devices still work. A room keeps showing its last known state in the meantime rather than reporting an error.
 
 All rooms of a home share the same set of requests per polling interval, so adding rooms does not cost extra requests.
 To spend less of the allowance, raise the polling intervals in a device's settings.

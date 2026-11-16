@@ -154,6 +154,14 @@ export abstract class TadoApiDevice extends OAuth2Device<TadoOAuth2Client> {
     }
 
     /**
+     * A save follows a successful authorization, which also restores every
+     * device that was marked unavailable when the old session expired.
+     */
+    override async onOAuth2Saved(): Promise<void> {
+        await this.setAvailable().catch(this.error);
+    }
+
+    /**
      * onSettings is called when the user updates the device's settings.
      *
      * @param event The onSettings event data

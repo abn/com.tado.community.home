@@ -1,6 +1,7 @@
 import { fetch, OAuth2Client, OAuth2Error, OAuth2Token } from "homey-oauth2app";
 import { TadoApiClient, TadoXApiClient } from "./tado-api-client";
 import PairSession from "homey/lib/PairSession";
+import { AsyncLocalStorage } from "node:async_hooks";
 
 type AllowedMethods = "get" | "post" | "put" | "delete";
 type PayloadMethods = "post" | "put";
@@ -51,8 +52,40 @@ export class TadoOAuth2Client extends OAuth2Client<OAuth2Token> {
     public readonly tado: TadoApiClient = new TadoApiClient();
     public readonly tadox: TadoXApiClient = new TadoXApiClient();
 
-    /** When the allowance ran out, until tado° says it is back. */
+    /**
+     * Requests held back from background polling so a user can still pair
+     * or add a device after the daily allowance is nearly spent.
+     */
+    private static readonly INTERACTIVE_REQUEST_RESERVE = 20;
+
+    /** When background requests are held back, until tado° says it is back. */
     private exhaustedUntil: number = 0;
+
+    /** Marks the async context of a user-initiated action. */
+    private readonly userInitiated = new AsyncLocalStorage<boolean>();
+
+    /**
+     * Whether the client is holding background requests back, and how
+     * long until tado° resets the allowance.
+     */
+    public get requestAllowance(): { exhausted: boolean; resetsInSeconds: number } {
+        const resetsInMs = this.exhaustedUntil - Date.now();
+
+        return {
+            exhausted: resetsInMs > 0,
+            resetsInSeconds: Math.max(0, Math.ceil(resetsInMs / 1000)),
+        };
+    }
+
+    /**
+     * Runs user-initiated calls even while the background allowance is
+     * held back, so pairing and adding devices can spend the reserve.
+     * Keep the callback to the request itself: timers created inside it
+     * inherit the mark.
+     */
+    public withUserInitiatedRequests<T>(fn: () => Promise<T>): Promise<T> {
+        return this.userInitiated.run(true, fn);
+    }
 
     /**
      * Monkey patch method to replace `TadoApiClient.apiCall()` in order to use the authenticated session from `OAuth2Client`.
@@ -72,11 +105,13 @@ export class TadoOAuth2Client extends OAuth2Client<OAuth2Token> {
 
     /**
      * tado° counts every request against a daily allowance and does not
-     * hand one back until the window rolls over, so once it is spent the
-     * answer is a refusal until then. Ask anyway and the day ends up
-     * refusing requests that other devices still needed.
+     * hand one back until the window rolls over, so once it reaches the
+     * reserve the answer is a refusal until then. Ask anyway and the day
+     * ends up refusing requests that other devices still needed.
      */
     private assertAllowanceAvailable(): void {
+        if (this.userInitiated.getStore() === true) return;
+
         const resetsInMs = this.exhaustedUntil - Date.now();
         if (resetsInMs <= 0) return;
 
@@ -86,17 +121,19 @@ export class TadoOAuth2Client extends OAuth2Client<OAuth2Token> {
     }
 
     /**
-     * Records the allowance tado° reported and, once it is spent, holds
-     * requests back until the window resets.
+     * Records the allowance tado° reported and, once it reaches the
+     * reserve, holds background requests back until the window resets.
      */
     private updateRateLimit(headers: fetch.Headers): void {
         const rateLimit = parseRateLimit(headers);
         if (rateLimit === undefined || rateLimit.resetsIn === undefined) return;
-        if (rateLimit.remaining > 0 || Date.now() < this.exhaustedUntil) return;
+        if (rateLimit.remaining > TadoOAuth2Client.INTERACTIVE_REQUEST_RESERVE || Date.now() < this.exhaustedUntil) {
+            return;
+        }
 
         this.exhaustedUntil = Date.now() + rateLimit.resetsIn * 1000;
         this.log(
-            `The tado° request allowance of ${rateLimit.quota} per day is spent, holding requests for ${rateLimit.resetsIn}s`,
+            `The tado° request allowance of ${rateLimit.quota} per day is nearly spent, holding background requests for ${rateLimit.resetsIn}s and keeping ${rateLimit.remaining} for user actions`,
         );
     }
 
@@ -168,6 +205,9 @@ export class TadoOAuth2Client extends OAuth2Client<OAuth2Token> {
 
             if (refresh_token_expired) {
                 this.log("Refresh token has expired, please re-authenticate");
+                if (typeof error === "object" && error !== null) {
+                    (error as { refreshTokenExpired?: boolean }).refreshTokenExpired = true;
+                }
                 this.emit("expired");
             } else {
                 this.log(`Attempt to refresh token failed with status ${response.status}`);
@@ -191,7 +231,7 @@ export class TadoOAuth2Client extends OAuth2Client<OAuth2Token> {
 
         if (verify) {
             const authorizationUrl = verify.verification_uri_complete;
-            await session.emit("url", authorizationUrl);
+            await session.emit("url", authorizationUrl).catch(this.error);
         }
         const tadoToken = await futureToken;
 
