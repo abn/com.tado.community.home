@@ -61,5 +61,8 @@
   },
   "3.1.0": {
     "en": "Added a room connection alarm with flow triggers and a condition, fixed boost heating reporting, fixed a failed room temperature write reporting success, reduced API requests to one per home per polling interval, and updated all dependencies."
+  },
+  "3.1.1": {
+    "en": "Fixed pairing and repair hanging after tado° authorization. Failures are now shown in the pairing screen, repair closes and restores the devices, and part of the daily API allowance is kept for pairing and adding devices."
   }
 }
